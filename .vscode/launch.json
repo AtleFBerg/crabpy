@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run CrabPy",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/crabpy.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "justMyCode": true
+        }
+    ]
+}
