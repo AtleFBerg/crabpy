@@ -19,7 +19,7 @@ WHITE = (255, 255, 255)
 # Set up the crabs
 crabs: list[Crab] = []
 crab_sprites = []
-for i in range(3):
+for i in range(4):
     crab = Crab()
     crabs.append(crab)
     crab_sprite = pygame.image.load(crab.sprite())
@@ -28,10 +28,10 @@ for i in range(3):
 
 # Define food types and their probabilities (weights)
 food_weights = {
-    Seaweeds: 0.4,       # 40% chance
+    Seaweeds: 0.3,       # 30% chance
     Clam: 0.15,          # 15% chance
     FishRemains: 0.1,    # 10% chance
-    Plankton: 0.2,       # 20% chance
+    Plankton: 0.3,       # 30% chance
     Starfish: 0.1,       # 10% chance
     Shrimp: 0.05         # 5% chance
 }
@@ -61,15 +61,12 @@ while running:
     screen.fill(WHITE)
 
     food_to_remove = []
-    new_crabs = []
 
     for crab, crab_sprite in zip(crabs, crab_sprites):
         screen.blit(crab_sprite, (crab.x, crab.y))
 
-        # Exclude self when passing potential mates
-        potential_mates = [c for c in crabs if c != crab]
-
-        crab.make_decision(all_crabs=crabs, potential_mates=potential_mates, potential_food=all_food)
+        crab.make_decision(all_crabs=crabs, crab_sprites=crab_sprites,                            
+                              potential_food=all_food)
 
         # Mark food for removal if eaten
         if hasattr(crab, "food_to_remove") and crab.food_to_remove:
@@ -82,12 +79,13 @@ while running:
             index = all_food.index(food)
             all_food.pop(index)
             food_sprites.pop(index)  # Remove corresponding sprite
-
-    # Add new crabs after iteration
-    crabs.extend(new_crabs)
-    
+  
     # Draw all food items dynamically
     for food, food_sprite in zip(all_food, food_sprites):
+        new_food = food.update()  # let food handle respawning
+        if new_food:
+            all_food.append(new_food)
+            food_sprites.append(pygame.transform.scale(pygame.image.load(new_food.sprite()).convert_alpha(), (25, 25)))
         screen.blit(food_sprite, (food.x, food.y))
     
     clock.tick(30)
