@@ -14,7 +14,7 @@ class Food():
         crab.energy += self.energy
 
     def sprite(self):
-        raise NotImplementedError("Each food type must define its own sprite")
+        return f"sprites/{self.__class__.__name__}.png"
     
     def update(self):
         if self.time_to_multiply is not None:
@@ -29,44 +29,26 @@ class Food():
         new_food.y = random.randint(0, 800 - new_food.height)
         return new_food
    
-class Seaweeds(Food):
+class Seaweed(Food):
     def __init__(self):
         super().__init__(energy=10, time_to_multiply=200)
-
-    def sprite(self):
-        return 'seaweed.png'
 
 class Clam(Food):
     def __init__(self):
         super().__init__(energy=25, time_to_multiply=600)
-    
-    def sprite(self):
-        return 'clam.png'
 
 class FishRemains(Food):
     def __init__(self):
         super().__init__(energy=40, time_to_multiply=800)
-    
-    def sprite(self):
-        return 'fish_remains.png'
 
 class Plankton(Food):
     def __init__(self):
         super().__init__(energy=5, time_to_multiply=200)
-    
-    def sprite(self):
-        return 'plankton.png'
 
 class Starfish(Food):
     def __init__(self):
         super().__init__(energy=30, time_to_multiply=600)
-    
-    def sprite(self):
-        return 'starfish.png'
 
 class Shrimp(Food):
     def __init__(self):
         super().__init__(energy=20, time_to_multiply=400)
-    
-    def sprite(self):
-        return 'shrimp.png'

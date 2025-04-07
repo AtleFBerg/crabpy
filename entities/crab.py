@@ -18,7 +18,7 @@ class Crab:
     def get_random_preferred_food(self, how_many: int):
         """Get a random preferred food from the list."""
         return random.choices(
-            [Seaweeds, Plankton, Starfish, Shrimp, Clam, FishRemains], 
+            [Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains], 
             k=how_many
         )
     
@@ -45,7 +45,7 @@ class Crab:
 
                 # Inherit food preferences
                 inherited_foods = random.choice([self.preferred_foods, closest_mate.preferred_foods])[:2]
-                new_food = random.choice([Seaweeds, Plankton, Starfish, Shrimp, Clam, FishRemains])
+                new_food = random.choice([Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains])
                 baby_preferred_foods = [new_food] + inherited_foods
 
                 baby_crab = Crab(x=self.x, y=self.y, energy=20)
@@ -167,7 +167,7 @@ class Crab:
             self.y += self.get_speed()
 
     def sprite(self):
-        return 'crabby.png'
+        return 'sprites/crabby.png'
     
     def is_near(self, other_crab, threshold=5):
         """Check if two crabs are within a given pixel threshold."""

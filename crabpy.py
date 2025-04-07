@@ -28,7 +28,7 @@ for i in range(4):
 
 # Define food types and their probabilities (weights)
 food_weights = {
-    Seaweeds: 0.3,       # 30% chance
+    Seaweed: 0.3,       # 30% chance
     Clam: 0.15,          # 15% chance
     FishRemains: 0.1,    # 10% chance
     Plankton: 0.3,       # 30% chance
@@ -72,6 +72,13 @@ while running:
         if hasattr(crab, "food_to_remove") and crab.food_to_remove:
             food_to_remove.append(crab.food_to_remove)
             crab.food_to_remove = None  # Reset after marking for removal
+        
+        crab.energy -= 0.05
+        if crab.energy <= 0:
+            print("Crab died due to lack of energy.")
+            crabs.remove(crab)
+            crab_sprites.remove(crab_sprite)  # Remove corresponding sprite
+
 
     # Remove eaten food after iteration
     for food in food_to_remove:
