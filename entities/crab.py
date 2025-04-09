@@ -9,18 +9,18 @@ class Crab:
         self.x = random.randint(0, 1024 - 50)
         self.y = random.randint(0, 800 - 50)
         self.speed = 1
+        self.height = 50
+        self.width = 50
         self.energy = random.randint(10, 50) if energy is None else energy
         self.looking_for_mate = False
         self.sex = random.choice(['M', 'F'])
         self.rejected_mates = {}  # Track crabs that are not valid mates
-        self.preferred_foods = self.get_random_preferred_food(3)
+        self.preferred_foods = self.generate_food_preferences()
     
-    def get_random_preferred_food(self, how_many: int):
-        """Get a random preferred food from the list."""
-        return random.choices(
-            [Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains], 
-            k=how_many
-        )
+    def generate_food_preferences(self):
+        """Assign a random float between 0.1 and 1.0 for each available food."""
+        all_foods = [Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains]
+        return {food: round(random.uniform(0.1, 1.0), 2) for food in all_foods}
     
     def look_for_mate(self, all_crabs: list["Crab"], crab_sprites: list):
 
@@ -33,7 +33,6 @@ class Crab:
 
         
         if not valid_mates:
-            print("No valid mates left.")
             return  # No valid mates left
 
         closest_mate = self.find_closest_mate(valid_mates)
@@ -43,13 +42,8 @@ class Crab:
                 self.energy -= 40
                 closest_mate.energy -= 40
 
-                # Inherit food preferences
-                inherited_foods = random.choice([self.preferred_foods, closest_mate.preferred_foods])[:2]
-                new_food = random.choice([Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains])
-                baby_preferred_foods = [new_food] + inherited_foods
-
                 baby_crab = Crab(x=self.x, y=self.y, energy=20)
-                baby_crab.preferred_foods = baby_preferred_foods
+                baby_crab.preferred_foods = self.inherit_preferences(self.preferred_foods, closest_mate.preferred_foods)
                 all_crabs.append(baby_crab)
                 crab_sprites.append(pygame.image.load(baby_crab.sprite()))
 
@@ -61,7 +55,29 @@ class Crab:
 
         self.move_closer(closest_mate)
 
-        
+    def inherit_preferences(self, parent1_prefs, parent2_prefs):
+        baby_prefs = {}
+        all_foods = [Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains]
+        mutation_chance = 0.1
+
+        for food in all_foods:
+            if random.random() < mutation_chance:
+                # Random mutation
+                baby_val = round(random.uniform(0.1, 1.0), 2)
+                print(f"Mutation occurred for {food.__name__}: {baby_val}")
+            else:
+                parent1_val = parent1_prefs.get(food, 0.5)
+                parent2_val = parent2_prefs.get(food, 0.5)
+                avg = (parent1_val + parent2_val) / 2
+
+                # Non-linear variation
+                variation = (random.uniform(-1, 1) ** 3) * 0.5
+                baby_val = round(max(0.1, min(1.0, avg + variation)), 2)
+
+            baby_prefs[food] = baby_val
+
+        return baby_prefs
+
     def move_closer(self, target):
         """Move towards the target without overshooting."""
         if not target:
@@ -132,19 +148,40 @@ class Crab:
         return closest_food
     
     def find_preferred_food(self, potential_food):
-        for preferred in self.preferred_foods:  # Check foods in order of preference
-            for food in potential_food:
-                if isinstance(food, preferred):
-                    return food  # Eat the highest-ranked available food
-        return None  # No preferred food found
+        best_food = None
+        best_score = -1  # Higher is better
+        preference_weight = 3
+
+        for food in potential_food:
+            food_type = type(food)
+            preference = self.preferred_foods.get(food_type, 0.1)  # Default to 0.1 if missing
+
+            distance = ((self.x - food.x) ** 2 + (self.y - food.y) ** 2) ** 0.5
+            if distance == 0:  # Avoid division by zero
+                distance = 0.1
+
+            score = (preference * preference_weight) / distance
+
+            if score > best_score:
+                best_score = score
+                best_food = food
+
+        return best_food
     
-    def make_decision(self, all_crabs, crab_sprites, potential_food: list[Food]):
+    def make_decision(self, all_crabs, crab_sprites, potential_food: list[Food], crab_pot=None):
         if self.energy > 50:
             self.looking_for_mate = True
             self.look_for_mate(all_crabs, crab_sprites)
         else:
             self.looking_for_mate = False
+            if crab_pot and crab_pot.lowered and crab_pot.bait:
+                bait_class = crab_pot.bait  # This is the class, like Seaweeds
+                if self.preferred_foods.get(bait_class, 0) > 0.2:
+                    self.move_closer(crab_pot)
+                    return
             self.look_for_food(potential_food)  # Now prioritizes preferred foods
+
+            
     
     def get_speed(self):
         """Smooth speed scaling with energy."""
@@ -173,4 +210,17 @@ class Crab:
         """Check if two crabs are within a given pixel threshold."""
         distance = ((self.x - other_crab.x) ** 2 + (self.y - other_crab.y) ** 2) ** 0.5
         return distance <= threshold
+    
+    def count_sexes(crabs):
+        males = sum(1 for crab in crabs if crab.sex == 'M')
+        females = sum(1 for crab in crabs if crab.sex == 'F')
+        return males, females
+    
+    def adjust_food_preferences(self, eaten_food_type):
+        for food_name in self.preferred_foods:
+            if food_name == eaten_food_type.__name__:
+                self.preferred_foods[food_name] += 0.05  # Reward the one just eaten
+            else:
+                self.preferred_foods[food_name] = max(0, self.preferred_foods[food_name] - 0.005)  # Light decay
+
     

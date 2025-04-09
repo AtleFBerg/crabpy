@@ -1,6 +1,7 @@
 import random
 import time
 
+
 class Food():
     def __init__(self, energy, width=25, height=25, time_to_multiply=None):
         self.energy = energy
@@ -12,6 +13,9 @@ class Food():
 
     def eat(self, crab):
         crab.energy += self.energy
+        crab.adjust_food_preferences(type(self))
+        self.consumed = True
+        self.last_eaten_time = time.time()
 
     def sprite(self):
         return f"sprites/{self.__class__.__name__}.png"
@@ -31,24 +35,24 @@ class Food():
    
 class Seaweed(Food):
     def __init__(self):
-        super().__init__(energy=10, time_to_multiply=200)
+        super().__init__(energy=10, time_to_multiply=150)
 
 class Clam(Food):
     def __init__(self):
-        super().__init__(energy=25, time_to_multiply=600)
+        super().__init__(energy=25, time_to_multiply=400)
 
 class FishRemains(Food):
     def __init__(self):
-        super().__init__(energy=40, time_to_multiply=800)
+        super().__init__(energy=40, time_to_multiply=400)
 
 class Plankton(Food):
     def __init__(self):
-        super().__init__(energy=5, time_to_multiply=200)
+        super().__init__(energy=5, time_to_multiply=150)
 
 class Starfish(Food):
     def __init__(self):
-        super().__init__(energy=30, time_to_multiply=600)
+        super().__init__(energy=30, time_to_multiply=400)
 
 class Shrimp(Food):
     def __init__(self):
-        super().__init__(energy=20, time_to_multiply=400)
+        super().__init__(energy=20, time_to_multiply=300)
