@@ -16,6 +16,7 @@ class Crab:
         self.sex = random.choice(['M', 'F'])
         self.rejected_mates = {}  # Track crabs that are not valid mates
         self.preferred_foods = self.generate_food_preferences()
+        self.target_food = None  # Initialize target_food to None
     
     def generate_food_preferences(self):
         """Assign a random float between 0.1 and 1.0 for each available food."""
@@ -118,23 +119,30 @@ class Crab:
         return closest_mate  
     
     def look_for_food(self, potential_food: list[Food]):
-        if not potential_food:  # Check if list is empty
+        if not potential_food:
             return
-        
+
         # Try to find the highest-ranked preferred food
         preferred_food = self.find_preferred_food(potential_food)
-        
-        if preferred_food:
-            target_food = preferred_food  # Prioritize preferred food
+
+        # If no strongly preferred food is found, find any food
+        if preferred_food and self.preferred_foods.get(type(preferred_food), 0) >= 0.2:
+            target_food = preferred_food
         else:
-            target_food = self.find_closest_food(potential_food)  # Default to any food
-        
-        # Move towards the chosen food
+            # Only choose fallback food if it's not disliked
+            fallback = self.find_closest_food(potential_food)
+            if fallback and self.preferred_foods.get(type(fallback), 0) >= 0.2:
+                target_food = fallback
+            else:
+                return  # No food worth eating
+
+        self.target_food = target_food
+
         if target_food.x == self.x and target_food.y == self.y:
             target_food.eat(self)
-            self.food_to_remove = target_food  # Mark for removal instead of deleting here
+            self.food_to_remove = target_food
             return
-        
+
         self.move_closer(target_food)
 
     def find_closest_food(self, potential_food: list[Food]):   
@@ -174,12 +182,16 @@ class Crab:
             self.look_for_mate(all_crabs, crab_sprites)
         else:
             self.looking_for_mate = False
+
+            all_food = potential_food[:]
+
+            # Treat the bait like a special food if the pot is lowered
             if crab_pot and crab_pot.lowered and crab_pot.bait:
-                bait_class = crab_pot.bait  # This is the class, like Seaweeds
-                if self.preferred_foods.get(bait_class, 0) > 0.2:
-                    self.move_closer(crab_pot)
-                    return
-            self.look_for_food(potential_food)  # Now prioritizes preferred foods
+                bait_food = crab_pot.bait()  # Create an instance of the bait
+                bait_food.x, bait_food.y = crab_pot.x, crab_pot.y
+                all_food.append(bait_food)
+
+            self.look_for_food(all_food)
 
             
     

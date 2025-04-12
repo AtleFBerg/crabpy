@@ -4,6 +4,7 @@ import random
 from entities.crab import Crab
 from entities.crab_pot import CrabPot
 from entities.food import *
+import utils
 
 # Initialize the game
 pygame.init()
@@ -23,7 +24,7 @@ WHITE = (255, 255, 255)
 # Set up the crabs
 crabs: list[Crab] = []
 crab_sprites = []
-for i in range(4):
+for i in range(5):
     crab = Crab()
     crabs.append(crab)
     crab_sprite = pygame.image.load(crab.sprite())
@@ -133,6 +134,14 @@ while running:
     else:
         pygame.draw.rect(screen, (100, 100, 100), (crab_pot.x, crab_pot.y, crab_pot.width, crab_pot.height), 1)
     
+    averages = utils.calculate_average_preferences(crabs)
+
+    y_offset = 100
+    for food_type, avg in averages.items():
+        text = f"{food_type.__name__}: {avg:.2f}"
+        text_surface = font.render(text, True, (0, 0, 0))
+        screen.blit(text_surface, (10, y_offset))
+        y_offset += 20
     clock.tick(30)
 
     # Update the display
@@ -142,21 +151,25 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                if crab_pot.lowered:
+                    crab_pot.raise_pot()
+                else:
+                    crab_pot.lower()
     
-    if not crab_pot.lowered:
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]: crab_pot.x -= 2
-        if keys[pygame.K_RIGHT]: crab_pot.x += 2
-        if keys[pygame.K_UP]: crab_pot.y -= 2
-        if keys[pygame.K_DOWN]: crab_pot.y += 2
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]: crab_pot.x -= 2
+    if keys[pygame.K_RIGHT]: crab_pot.x += 2
+    if keys[pygame.K_UP]: crab_pot.y -= 2
+    if keys[pygame.K_DOWN]: crab_pot.y += 2
 
-        if keys[pygame.K_1]: crab_pot.bait = Seaweed
-        if keys[pygame.K_2]: crab_pot.bait = Shrimp
-        if keys[pygame.K_SPACE]:
-            if crab_pot.lowered:
-                crab_pot.raise_pot()
-            else:
-                crab_pot.lower()
+    if keys[pygame.K_1]: crab_pot.bait = Seaweed
+    if keys[pygame.K_2]: crab_pot.bait = Shrimp
+        
+        
+    
+
 
 # Quit the game
 pygame.quit()
