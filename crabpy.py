@@ -1,6 +1,5 @@
-from time import sleep
+from collections import defaultdict
 import pygame
-import random
 from entities.crab import Crab
 from entities.crab_pot import CrabPot
 from entities.food import *
@@ -21,6 +20,8 @@ font = pygame.font.SysFont('Arial', 24)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
+timer = 0
+
 # Set up the crabs
 crabs: list[Crab] = []
 crab_sprites = []
@@ -39,35 +40,11 @@ bait_images = {
     'Shrimp': pygame.transform.scale(pygame.image.load('sprites/shrimp.png').convert_alpha(), (32, 32))
 }
 
-
-
-# Define food types and their probabilities (weights)
-food_weights = {
-    Seaweed: 0.3,       # 30% chance
-    Clam: 0.1,          # 15% chance
-    FishRemains: 0.1,    # 10% chance
-    Plankton: 0.3,       # 30% chance
-    Starfish: 0.1,       # 10% chance
-    Shrimp: 0.1         # 5% chance
-}
-
 # Create lists to store food objects and their sprites
 all_food: list[Food] = []
 food_sprites = []
 
-# Generate exactly 20 food items based on the given probabilities
-food_classes = list(food_weights.keys())
-food_probabilities = list(food_weights.values())
-
-for i in range(30):
-    food_class = random.choices(food_classes, weights=food_probabilities, k=1)[0]  # Pick a food type based on weight
-    food = food_class()  # Create the food object
-    all_food.append(food)  # Store it
-
-    # Load and scale the sprite
-    sprite = pygame.image.load(food.sprite()).convert_alpha()
-    sprite = pygame.transform.scale(sprite, (25, 25))
-    food_sprites.append(sprite)
+utils.world_food_respawn(all_food, food_sprites)
 
 # Set up the game loop
 running = True
@@ -114,10 +91,17 @@ while running:
             index = all_food.index(food)
             all_food.pop(index)
             food_sprites.pop(index)  # Remove corresponding sprite
-  
+    
+    food_counts = defaultdict(int)
+    for food in all_food:
+        food_counts[type(food)] += 1
+    timer += 1
+    if timer % 2000 == 0:
+        utils.world_food_respawn(all_food, food_sprites)
+        timer = 0
     # Draw all food items dynamically
     for food, food_sprite in zip(all_food, food_sprites):
-        new_food = food.update()  # let food handle respawning
+        new_food = food.update(food_counts)  # let food handle respawning
         if new_food:
             all_food.append(new_food)
             food_sprites.append(pygame.transform.scale(pygame.image.load(new_food.sprite()).convert_alpha(), (25, 25)))

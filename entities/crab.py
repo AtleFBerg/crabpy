@@ -161,6 +161,8 @@ class Crab:
         preference_weight = 3
 
         for food in potential_food:
+            if self.preferred_foods.get(type(food), 0) <= 0.2:
+                continue
             food_type = type(food)
             preference = self.preferred_foods.get(food_type, 0.1)  # Default to 0.1 if missing
 
