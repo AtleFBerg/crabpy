@@ -1,5 +1,6 @@
 import random
 import time
+import config
 
 
 class Food():
@@ -7,8 +8,8 @@ class Food():
         self.energy = energy
         self.width = width
         self.height = height
-        self.x = random.randint(0, 1024 - width)
-        self.y = random.randint(0, 800 - height)
+        self.x = random.randint(0, config.WORLD_WIDTH - self.width)
+        self.y = random.randint(0, config.WORLD_HEIGHT - self.height)
         self.time_to_multiply = time_to_multiply
 
     def eat(self, crab):
@@ -31,8 +32,8 @@ class Food():
             
     def multiply(self):
         new_food = self.__class__()
-        new_food.x = random.randint(0, 1024 - new_food.width)
-        new_food.y = random.randint(0, 800 - new_food.height)
+        new_food.x = random.randint(0, config.WORLD_WIDTH - new_food.width)
+        new_food.y = random.randint(0, config.SCREEN_HEIGHT - new_food.height)
         return new_food
    
 class Seaweed(Food):

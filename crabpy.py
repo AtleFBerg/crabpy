@@ -4,14 +4,19 @@ from entities.crab import Crab
 from entities.crab_pot import CrabPot
 from entities.food import *
 import utils
+import config
 
 # Initialize the game
 pygame.init()
 
 # Set up the screen
-screen = pygame.display.set_mode((1024, 800))
+
+screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
 pygame.display.set_caption('Crabpy')
 clock = pygame.time.Clock()
+
+camera_x = 0
+camera_y = 0
 
 pygame.font.init()
 font = pygame.font.SysFont('Arial', 24)
@@ -37,7 +42,11 @@ crab_pot = CrabPot(x=500, y=400, bait=None, width=100, height=100)
 
 bait_images = {
     'Seaweed': pygame.transform.scale(pygame.image.load('sprites/seaweed.png').convert_alpha(), (32, 32)),
-    'Shrimp': pygame.transform.scale(pygame.image.load('sprites/shrimp.png').convert_alpha(), (32, 32))
+    'Shrimp': pygame.transform.scale(pygame.image.load('sprites/shrimp.png').convert_alpha(), (32, 32)),
+    'Clam': pygame.transform.scale(pygame.image.load('sprites/clam.png').convert_alpha(), (32, 32)),
+    'FishRemains': pygame.transform.scale(pygame.image.load('sprites/fishremains.png').convert_alpha(), (32, 32)),
+    'Plankton': pygame.transform.scale(pygame.image.load('sprites/plankton.png').convert_alpha(), (32, 32)),
+    'Starfish': pygame.transform.scale(pygame.image.load('sprites/starfish.png').convert_alpha(), (32, 32)),
 }
 
 # Create lists to store food objects and their sprites
@@ -68,7 +77,7 @@ while running:
     screen.blit(text_surface, (10, 10))  # Top-left corner
 
     for crab, crab_sprite in zip(crabs, crab_sprites):
-        screen.blit(crab_sprite, (crab.x, crab.y))
+        screen.blit(crab_sprite, (crab.x - camera_x, crab.y - camera_y))
 
         crab.make_decision(all_crabs=crabs, crab_sprites=crab_sprites,                            
                               potential_food=all_food, crab_pot=crab_pot,)
@@ -105,18 +114,31 @@ while running:
         if new_food:
             all_food.append(new_food)
             food_sprites.append(pygame.transform.scale(pygame.image.load(new_food.sprite()).convert_alpha(), (25, 25)))
-        screen.blit(food_sprite, (food.x, food.y))
+        screen.blit(food_sprite, (food.x - camera_x, food.y - camera_y))
 
     if crab_pot.lowered and crab_pot.bait:
         bait_sprite = bait_images.get(crab_pot.bait.__name__)
-        pygame.draw.rect(screen, (100, 50, 0), (crab_pot.x, crab_pot.y, crab_pot.width, crab_pot.height), 2)
+        pygame.draw.rect(
+            screen,
+            (100, 50, 0),
+            (crab_pot.x - camera_x, crab_pot.y - camera_y, crab_pot.width, crab_pot.height),
+            2
+        )
         if bait_sprite:
-            screen.blit(bait_sprite, (crab_pot.x + 25, crab_pot.y + 25))  # Hover above pot
-            screen.blit(bait_sprite, (crab_pot.x + 50, crab_pot.y + 25))  # Hover above pot
-            screen.blit(bait_sprite, (crab_pot.x + 35, crab_pot.y + 50))  # Hover above pot
+            screen.blit(bait_sprite, (crab_pot.x + 25 - camera_x, crab_pot.y + 25 - camera_y))
+            screen.blit(bait_sprite, (crab_pot.x + 50 - camera_x, crab_pot.y + 25 - camera_y))
+            screen.blit(bait_sprite, (crab_pot.x + 35 - camera_x, crab_pot.y + 50 - camera_y))
         crab_pot.check_for_crabs(crabs)
     else:
-        pygame.draw.rect(screen, (100, 100, 100), (crab_pot.x, crab_pot.y, crab_pot.width, crab_pot.height), 1)
+        pygame.draw.rect(
+            screen,
+            (100, 50, 0),
+            (crab_pot.x - camera_x, crab_pot.y - camera_y, crab_pot.width, crab_pot.height),
+            2
+        )
+    
+    
+    
     
     averages = utils.calculate_average_preferences(crabs)
 
@@ -141,19 +163,21 @@ while running:
                     crab_pot.raise_pot()
                 else:
                     crab_pot.lower()
-    
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]: crab_pot.x -= 2
-    if keys[pygame.K_RIGHT]: crab_pot.x += 2
-    if keys[pygame.K_UP]: crab_pot.y -= 2
-    if keys[pygame.K_DOWN]: crab_pot.y += 2
+    if not crab_pot.lowered:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]: crab_pot.x -= 2
+        if keys[pygame.K_RIGHT]: crab_pot.x += 2
+        if keys[pygame.K_UP]: crab_pot.y -= 2
+        if keys[pygame.K_DOWN]: crab_pot.y += 2
 
-    if keys[pygame.K_1]: crab_pot.bait = Seaweed
-    if keys[pygame.K_2]: crab_pot.bait = Shrimp
+        if keys[pygame.K_1]: crab_pot.bait = Seaweed
+        if keys[pygame.K_2]: crab_pot.bait = Shrimp
+        if keys[pygame.K_3]: crab_pot.bait = Clam
+        if keys[pygame.K_4]: crab_pot.bait = FishRemains
+        if keys[pygame.K_5]: crab_pot.bait = Plankton
+        if keys[pygame.K_6]: crab_pot.bait = Starfish
+
+    camera_x, camera_y = utils.update_camera(crab_pot)
         
-        
-    
-
-
 # Quit the game
 pygame.quit()

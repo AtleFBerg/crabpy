@@ -34,6 +34,7 @@ class CrabPot:
             if self.area().colliderect(pygame.Rect(crab.x, crab.y, crab.width, crab.height)):
                 if self.number_of_crabs_allowed == self.caught_crabs.__len__():
                         print("Crab pot is full!")
+                        self.bait = None
                         break
                 if (
                     crab.target_food 

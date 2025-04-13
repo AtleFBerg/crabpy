@@ -2,12 +2,13 @@ import random
 import time
 import pygame
 from entities.food import *
+import config
 
 class Crab:
    
     def __init__(self, x=None, y=None, energy=None, preferred_foods=None):
-        self.x = random.randint(0, 1024 - 50)
-        self.y = random.randint(0, 800 - 50)
+        self.x = random.randint(0, config.WORLD_WIDTH - 50)
+        self.y = random.randint(0, config.SCREEN_HEIGHT - 50)
         self.speed = 1
         self.height = 50
         self.width = 50

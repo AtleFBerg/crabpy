@@ -2,6 +2,7 @@ import random
 from collections import defaultdict
 import pygame
 from entities.food import Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains
+import config
 def calculate_average_preferences(crabs):
 
     totals = defaultdict(float)
@@ -31,7 +32,7 @@ def world_food_respawn(all_food, food_sprites):
     # Generate exactly 20 food items based on the given probabilities
     food_classes = list(food_weights.keys())
     food_probabilities = list(food_weights.values())
-    
+
     for i in range(30):
         food_class = random.choices(food_classes, weights=food_probabilities, k=1)[0]  # Pick a food type based on weight
         food = food_class()  # Create the food object
@@ -41,3 +42,15 @@ def world_food_respawn(all_food, food_sprites):
         sprite = pygame.image.load(food.sprite()).convert_alpha()
         sprite = pygame.transform.scale(sprite, (25, 25))
         food_sprites.append(sprite)
+
+def update_camera(crab_pot):
+
+    # Target center based on crab pot
+    target_x = crab_pot.x + crab_pot.width // 2 - config.SCREEN_WIDTH // 2
+    target_y = crab_pot.y + crab_pot.height // 2 - config.SCREEN_HEIGHT // 2
+
+    # Clamp to world bounds
+    camera_x = max(0, min(target_x, config.WORLD_WIDTH - config.SCREEN_WIDTH))
+    camera_y = max(0, min(target_y, config.WORLD_HEIGHT - config.SCREEN_HEIGHT))
+
+    return camera_x, camera_y
