@@ -32,11 +32,9 @@ class Boat:
             self.pots.append(new_pot)
             all_food.append(selected_bait)
 
-    def raise_pot(self, pot_index):
-        if 0 <= pot_index < len(self.pots):
-            pot = self.pots[pot_index]
-            pot.raise_pot()
-            self.pots.pop(pot_index)
+    def raise_pot(self, pot):
+        pot.raise_pot()
+        self.pots.remove(pot)
 
     def update(self):
         # Wobble up/down using sine wave

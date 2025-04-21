@@ -231,11 +231,7 @@ while running:
                         break
 
                 if pot_under_boat:
-                    # Raise the pot if it's already lowered
-                    if pot_under_boat.lowered:
-                        pot_under_boat.raise_pot()
-                    else:
-                        pot_under_boat.lower()
+                    boat.raise_pot(pot_under_boat)
                 else:
                     # No pot under boat, drop a new one
                     boat.drop_pot(selected_bait, all_food)
