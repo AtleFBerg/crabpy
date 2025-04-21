@@ -60,7 +60,7 @@ class Crab:
     def inherit_preferences(self, parent1_prefs, parent2_prefs):
         baby_prefs = {}
         all_foods = [Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains]
-        mutation_chance = 0.1
+        mutation_chance = 0.01
 
         for food in all_foods:
             if random.random() < mutation_chance:
@@ -179,7 +179,7 @@ class Crab:
 
         return best_food
     
-    def make_decision(self, all_crabs, crab_sprites, potential_food: list[Food], crab_pot=None):
+    def make_decision(self, all_crabs, crab_sprites, potential_food: list[Food]):
         if self.energy > 50:
             self.looking_for_mate = True
             self.look_for_mate(all_crabs, crab_sprites)
@@ -188,19 +188,11 @@ class Crab:
 
             all_food = potential_food[:]
 
-            # Treat the bait like a special food if the pot is lowered
-            if crab_pot and crab_pot.lowered and crab_pot.bait:
-                bait_food = crab_pot.bait()  # Create an instance of the bait
-                bait_food.x, bait_food.y = crab_pot.x, crab_pot.y
-                all_food.append(bait_food)
-
             self.look_for_food(all_food)
 
-            
-    
     def get_speed(self):
         """Smooth speed scaling with energy."""
-        return max(1, int(self.energy ** 0.5 / 2))  # Speed grows slower but more natural
+        return max(1, int(self.energy ** 0.5 / 4))  # Speed grows slower but more natural
 
     def move_left(self):
         if self.x > 0:

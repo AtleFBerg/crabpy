@@ -19,7 +19,7 @@ def calculate_average_preferences(crabs):
 
     return averages
 
-def world_food_respawn(all_food, food_sprites):
+def world_food_respawn(all_food):
     # Define food types and their probabilities (weights)
     food_weights = {
         Seaweed: 0.3,       # 30% chance
@@ -38,16 +38,11 @@ def world_food_respawn(all_food, food_sprites):
         food = food_class()  # Create the food object
         all_food.append(food)  # Store it
 
-        # Load and scale the sprite
-        sprite = pygame.image.load(food.sprite()).convert_alpha()
-        sprite = pygame.transform.scale(sprite, (25, 25))
-        food_sprites.append(sprite)
-
-def update_camera(crab_pot):
+def update_camera(boat):
 
     # Target center based on crab pot
-    target_x = crab_pot.x + crab_pot.width // 2 - config.SCREEN_WIDTH // 2
-    target_y = crab_pot.y + crab_pot.height // 2 - config.SCREEN_HEIGHT // 2
+    target_x = boat.x + boat.width // 2 - config.SCREEN_WIDTH // 2
+    target_y = boat.base_y + boat.height // 2 - config.SCREEN_HEIGHT // 2
 
     # Clamp to world bounds
     camera_x = max(0, min(target_x, config.WORLD_WIDTH - config.SCREEN_WIDTH))

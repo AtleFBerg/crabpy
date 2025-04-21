@@ -4,15 +4,26 @@ import pygame
 from .crab import Crab
 
 class CrabPot:
-    def __init__(self, x=500, y=400, bait=None, width=100, height=100):
+    def __init__(self, x=500, y=400, width=50, height=50, bait=None):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.bait = bait  # Could be a class like Seaweeds, or just the name
+        self.bait_sprite = self.bait.sprite if bait else None
         self.lowered = False
         self.caught_crabs = []
         self.number_of_crabs_allowed = 25
+        self.buoy_sprite = pygame.image.load("sprites/buoy.png").convert_alpha()
+        self.buoy_sprite = pygame.transform.scale(self.buoy_sprite, (self.width, self.height))
+        self.underwater_pot_sprite = pygame.image.load("sprites/crab_pot.png").convert_alpha()
+        self.underwater_pot_sprite = pygame.transform.scale(self.underwater_pot_sprite, (self.width, self.height))
+
+    def set_bait(self, bait_instance):
+        self.bait = bait_instance
+        if self.bait:
+            self.bait_sprite = pygame.image.load(self.bait.sprite()).convert_alpha()
+            self.bait_sprite = pygame.transform.scale(self.bait_sprite, (25, 25))
 
     def area(self):
         return pygame.Rect(self.x, self.y, self.width, self.height)
@@ -38,9 +49,9 @@ class CrabPot:
                         break
                 if (
                     crab.target_food 
-                    and isinstance(crab.target_food, self.bait)
-                    and crab.preferred_foods.get(self.bait, 0) > 0.2):
-                    print(f"Caught a crab chasing {self.bait.__name__}: {crab}")
+                    and isinstance(crab.target_food, type(self.bait))
+                    and crab.preferred_foods.get(type(self.bait), 0) > 0.2):
+                    print(f"Caught a crab chasing {type(self.bait).__name__}: {crab}")
                     self.caught_crabs.append(crab)
                     crabs.remove(crab)
                     
