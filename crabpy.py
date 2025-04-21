@@ -168,27 +168,14 @@ while running:
             screen_y = crab_pot.y - camera_y
 
             if view_mode == "above":
-                # Draw buoy sprite if pot is lowered
-                if crab_pot.lowered:
-                    screen.blit(crab_pot.buoy_sprite, (screen_x, screen_y))
-                else:
-                    # Optional: draw pot on deck, or just skip
-                    pygame.draw.rect(screen, (100, 100, 100), (screen_x, screen_y, crab_pot.width, crab_pot.height), 1)
+                screen.blit(crab_pot.buoy_sprite, (screen_x, screen_y))
+                
 
             elif view_mode == "underwater":
                 # Draw underwater crab pot
                 screen.blit(crab_pot.underwater_pot_sprite, (screen_x, screen_y))
 
-                # Draw bait inside pot if it has bait
-                if crab_pot.lowered and crab_pot.bait:
-                    crab_pot.bait_sprite = bait_images.get(type(crab_pot.bait).__name__)
-                    if crab_pot.bait_sprite:
-                        bait_rect = crab_pot.bait_sprite.get_rect()
-                        bait_x = screen_x + (crab_pot.width - bait_rect.width) // 2
-                        bait_y = screen_y + (crab_pot.height - bait_rect.height) // 2 - 4  # Adjust up by 4px
-                        screen.blit(crab_pot.bait_sprite, (bait_x, bait_y))
-
-            crab_pot.check_for_crabs(crabs)
+            crab_pot.check_for_crabs(crabs, all_food)
     
     averages = utils.calculate_average_preferences(crabs)
 
@@ -220,8 +207,8 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 # Check if boat is over a crab pot
+                MARGIN = 100
                 pot_under_boat = None
-                MARGIN = 256  # Margin for collision detection
                 for pot in boat.pots:
                     if (
                         abs(pot.x - boat.x) < MARGIN // 2 and
@@ -231,7 +218,7 @@ while running:
                         break
 
                 if pot_under_boat:
-                    boat.raise_pot(pot_under_boat)
+                    boat.raise_pot(pot_under_boat, all_food)
                 else:
                     # No pot under boat, drop a new one
                     boat.drop_pot(selected_bait, all_food)

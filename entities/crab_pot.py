@@ -1,6 +1,8 @@
 import time
 import pygame
 
+from entities.food import Food
+
 from .crab import Crab
 
 class CrabPot:
@@ -32,20 +34,23 @@ class CrabPot:
         print("Pot lowered!")
         self.lowered = True
 
-    def raise_pot(self):
+    def raise_pot(self, all_food: list[Food]):
+        if self.bait in all_food:
+            all_food.remove(self.bait)
         self.lowered = False
         print("Crab pot raised. Caught crabs:", self.caught_crabs.__len__())
         self.caught_crabs = []
 
-    def check_for_crabs(self, crabs: list[Crab]):
-        if not self.lowered:
-            return
+    def check_for_crabs(self, crabs: list[Crab], all_food: list[Food]):
 
         for crab in crabs[:]:  # Work on a copy to allow safe removal
             if self.area().colliderect(pygame.Rect(crab.x, crab.y, crab.width, crab.height)):
                 if self.number_of_crabs_allowed == self.caught_crabs.__len__():
                         print("Crab pot is full!")
+                        if self.bait in all_food:
+                            all_food.remove(self.bait)
                         self.bait = None
+                        self.bait_sprite = None
                         break
                 if (
                     crab.target_food 

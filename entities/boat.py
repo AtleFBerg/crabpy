@@ -27,13 +27,15 @@ class Boat:
 
     def drop_pot(self, selected_bait, all_food):
         if len(self.pots) < self.max_pots:
+            selected_bait.x = self.x + self.width // 2
+            selected_bait.y = self.base_y + self.height
             new_pot = CrabPot(self.x + self.width // 2, self.base_y + self.height, bait=selected_bait)
             new_pot.lower()
             self.pots.append(new_pot)
             all_food.append(selected_bait)
 
-    def raise_pot(self, pot):
-        pot.raise_pot()
+    def raise_pot(self, pot, all_food):
+        pot.raise_pot(all_food)
         self.pots.remove(pot)
 
     def update(self):

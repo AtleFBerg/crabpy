@@ -228,6 +228,6 @@ class Crab:
             if food_name == eaten_food_type.__name__:
                 self.preferred_foods[food_name] += 0.05  # Reward the one just eaten
             else:
-                self.preferred_foods[food_name] = max(0, self.preferred_foods[food_name] - 0.005)  # Light decay
+                self.preferred_foods[food_name] = max(0, self.preferred_foods[food_name] - 0.0025)  # Light decay
 
     

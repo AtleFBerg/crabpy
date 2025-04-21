@@ -30,7 +30,7 @@ class Food():
             self.time_to_multiply -= 1
             if self.time_to_multiply <= 0:
                 self.time_to_multiply = random.randint(300, 1200)
-                if food_counts.get(type(self), 0) > 100:
+                if food_counts.get(type(self), 0) > 50:
                     return 
                 return self.multiply()
             
