@@ -1,14 +1,16 @@
 from collections import defaultdict
 import pygame
+from animations.underwater_animation import UnderwaterAnimation
+from animations.water_animation import WaterAnimation
 from entities.boat import Boat
 from entities.crab import Crab
-from entities.crab_pot import CrabPot
 from entities.food import *
 import utils
 import config
 
-# Initialize the game
 pygame.init()
+pygame.font.init()
+font = pygame.font.SysFont('Arial', 24)
 
 # Set up the screen
 
@@ -16,43 +18,23 @@ screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
 pygame.display.set_caption('Crabpy')
 clock = pygame.time.Clock()
 
+
+# World variables
 camera_x = 0
 camera_y = 0
-
-pygame.font.init()
-font = pygame.font.SysFont('Arial', 24)
-
-# Boat
-boat = Boat(100, 100)
-boat.sprite = pygame.image.load("sprites/boat.png").convert_alpha()
-boat.sprite = pygame.transform.scale(boat.sprite, (144, 96))
-
-#Water animation
-water_tile = pygame.image.load("sprites/water_tile.png").convert_alpha()
-water_tile = pygame.transform.scale(water_tile, (32, 32))
-water_tile_width, water_tile_height = water_tile.get_width(), water_tile.get_height()
-scroll_x = 0
-scroll_y = 0
-scroll_speed = 0.5  
-
-# Sea bed animation
-sea_bed_tile = pygame.image.load("sprites/sea_bed_tile.png").convert_alpha()
-sea_bed_tile = pygame.transform.scale(sea_bed_tile, (32, 32))
-sea_bed_tile_width, sea_bed_tile_height = sea_bed_tile.get_width(), sea_bed_tile.get_height()
-
-# Bait
 selected_bait = None
-
-# Set up the colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-
 timer = 0
+boat = Boat(100, 100)
+all_food: list[Food] = []
+utils.world_food_respawn(all_food)
+
+# Animations
+water_animation = WaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
+underwater_animation = UnderwaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
 
 # Toggle button for view mode
 view_mode = "above"
 toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)  # x, y, width, height 
-
 
 # Set up the crabs
 crabs: list[Crab] = []
@@ -63,43 +45,18 @@ for i in range(5):
     crab_sprite = pygame.image.load(crab.sprite())
     crab_sprites.append(crab_sprite)
 
-# Set up the crab pot
-# crab_pot = CrabPot(x=500, y=400, bait=None, width=100, height=100)
-# crab_pot_sprite = pygame.image.load("sprites/crab_pot.png").convert_alpha()
-
-bait_images = {
-    'Seaweed': pygame.transform.scale(pygame.image.load('sprites/seaweed.png').convert_alpha(), (32, 32)),
-    'Shrimp': pygame.transform.scale(pygame.image.load('sprites/shrimp.png').convert_alpha(), (32, 32)),
-    'Clam': pygame.transform.scale(pygame.image.load('sprites/clam.png').convert_alpha(), (32, 32)),
-    'FishRemains': pygame.transform.scale(pygame.image.load('sprites/fishremains.png').convert_alpha(), (32, 32)),
-    'Plankton': pygame.transform.scale(pygame.image.load('sprites/plankton.png').convert_alpha(), (32, 32)),
-    'Starfish': pygame.transform.scale(pygame.image.load('sprites/starfish.png').convert_alpha(), (32, 32)),
-}
-
-# Create lists to store food objects and their sprites
-all_food: list[Food] = []
-
-utils.world_food_respawn(all_food)
-
 # Set up the game loop
 running = True
 while running:
     # Fill the screen with white
-    screen.fill(WHITE)
-
-    # Camera movement
-    scroll_x = (scroll_x + scroll_speed) % water_tile_width
-    scroll_y = (scroll_y + scroll_speed) % water_tile_height
+    screen.fill((255, 255, 255))
     
     # Draw the water tiles
     if view_mode == "above":
-        for y in range(-water_tile_height, config.SCREEN_HEIGHT + water_tile_height, water_tile_height):
-            for x in range(-water_tile_width, config.SCREEN_WIDTH + water_tile_width, water_tile_width):
-                screen.blit(water_tile, (x - scroll_x, y - scroll_y))
+        water_animation.update()
+        water_animation.draw(screen)
     else:
-        for y in range(-sea_bed_tile_height, config.WORLD_HEIGHT + sea_bed_tile_height, sea_bed_tile_height):
-            for x in range(-sea_bed_tile_width, config.WORLD_WIDTH + sea_bed_tile_width, sea_bed_tile_width):
-                screen.blit(sea_bed_tile, (x - camera_x, y - camera_y))
+        underwater_animation.draw(screen)
 
     if selected_bait:
         bait_text = f"Bait: {selected_bait.__class__.__name__}"
@@ -249,18 +206,7 @@ while running:
     if keys[pygame.K_5]: selected_bait = Plankton(is_bait=True)
     if keys[pygame.K_6]: selected_bait = Starfish(is_bait=True)
     
-    # if keys[pygame.K_1]: crab_pot.set_bait(Seaweed())
-    # if keys[pygame.K_2]: crab_pot.set_bait(Shrimp())
-    # if keys[pygame.K_3]: crab_pot.set_bait(Clam())
-    # if keys[pygame.K_4]: crab_pot.set_bait(FishRemains())
-    # if keys[pygame.K_5]: crab_pot.set_bait(Plankton())
-    # if keys[pygame.K_6]: crab_pot.set_bait(Starfish())
-    
     camera_x, camera_y = utils.update_camera(boat)
-
-    
-    
-
-        
+   
 # Quit the game
 pygame.quit()
