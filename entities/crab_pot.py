@@ -15,6 +15,7 @@ class CrabPot:
         self.bait_sprite = self.bait.sprite if bait else None
         self.lowered = False
         self.caught_crabs = []
+        self.is_full = False
         self.number_of_crabs_allowed = 25
         self.buoy_sprite = pygame.image.load("sprites/buoy.png").convert_alpha()
         self.buoy_sprite = pygame.transform.scale(self.buoy_sprite, (self.width, self.height))
@@ -42,11 +43,13 @@ class CrabPot:
         self.caught_crabs = []
 
     def check_for_crabs(self, crabs: list[Crab], all_food: list[Food]):
-
+        if self.is_full:
+            return
         for crab in crabs[:]:  # Work on a copy to allow safe removal
             if self.area().colliderect(pygame.Rect(crab.x, crab.y, crab.width, crab.height)):
                 if self.number_of_crabs_allowed == self.caught_crabs.__len__():
                         print("Crab pot is full!")
+                        self.is_full = True
                         if self.bait in all_food:
                             all_food.remove(self.bait)
                         self.bait = None

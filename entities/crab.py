@@ -10,21 +10,28 @@ class Crab:
         self.x = random.randint(0, config.WORLD_WIDTH - 50)
         self.y = random.randint(0, config.SCREEN_HEIGHT - 50)
         self.speed = 1
-        self.height = 50
         self.width = 50
+        self.height = 50
+        self.sprite = pygame.image.load("sprites/crabby.png").convert_alpha()
+        self.sprite = pygame.transform.scale(self.sprite, (self.width, self.height))
         self.energy = random.randint(10, 50) if energy is None else energy
         self.looking_for_mate = False
         self.sex = random.choice(['M', 'F'])
-        self.rejected_mates = {}  # Track crabs that are not valid mates
+        self.rejected_mates = {}
         self.preferred_foods = self.generate_food_preferences()
-        self.target_food = None  # Initialize target_food to None
+        self.target_food = None
+        self.food_to_remove = None 
     
+    def update(self):
+        self.energy -= 0.01
+        
+
     def generate_food_preferences(self):
         """Assign a random float between 0.1 and 1.0 for each available food."""
         all_foods = [Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains]
         return {food: round(random.uniform(0.1, 1.0), 2) for food in all_foods}
     
-    def look_for_mate(self, all_crabs: list["Crab"], crab_sprites: list):
+    def look_for_mate(self, all_crabs: list["Crab"]):
 
         # Remove old rejections after some time (e.g., 5 seconds)
         current_time = time.time()
@@ -47,7 +54,6 @@ class Crab:
                 baby_crab = Crab(x=self.x, y=self.y, energy=20)
                 baby_crab.preferred_foods = self.inherit_preferences(self.preferred_foods, closest_mate.preferred_foods)
                 all_crabs.append(baby_crab)
-                crab_sprites.append(pygame.image.load(baby_crab.sprite()))
 
             else:
                 # Use `id(closest_mate)` as the key instead of the object itself
@@ -179,15 +185,13 @@ class Crab:
 
         return best_food
     
-    def make_decision(self, all_crabs, crab_sprites, potential_food: list[Food]):
+    def make_decision(self, all_crabs, potential_food: list[Food]):
         if self.energy > 50:
             self.looking_for_mate = True
-            self.look_for_mate(all_crabs, crab_sprites)
+            self.look_for_mate(all_crabs)
         else:
             self.looking_for_mate = False
-
             all_food = potential_food[:]
-
             self.look_for_food(all_food)
 
     def get_speed(self):
@@ -209,9 +213,6 @@ class Crab:
     def move_down(self):
         if self.y < 800 - 50:
             self.y += self.get_speed()
-
-    def sprite(self):
-        return 'sprites/crabby.png'
     
     def is_near(self, other_crab, threshold=5):
         """Check if two crabs are within a given pixel threshold."""

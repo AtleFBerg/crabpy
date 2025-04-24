@@ -1,6 +1,7 @@
 import random
 from collections import defaultdict
 import pygame
+from entities.crab import Crab
 from entities.food import Seaweed, Plankton, Starfish, Shrimp, Clam, FishRemains
 import config
 def calculate_average_preferences(crabs):
@@ -49,3 +50,9 @@ def update_camera(boat):
     camera_y = max(0, min(target_y, config.WORLD_HEIGHT - config.SCREEN_HEIGHT))
 
     return camera_x, camera_y
+
+def count_crabs(all_crabs, screen):
+    m, f = Crab.count_sexes(all_crabs)
+    font = pygame.font.SysFont(None, 30)
+    text_surface = font.render(f"Males: {m}  Females: {f}", True, (0, 0, 0))
+    screen.blit(text_surface, (10, 10))  # Top-left corner    
