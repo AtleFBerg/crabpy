@@ -6,6 +6,7 @@ from entities.boat import Boat
 from entities.crab import Crab
 from entities.food import *
 import services.food_service as food_service
+import animations.gui_elements as gui_elements
 import utils
 import config
 
@@ -27,7 +28,7 @@ boat = Boat(100, 100)
 all_food: list[Food] = []
 utils.world_food_respawn(all_food)
 all_crabs: list[Crab] = []
-crab_inventory:int = 0
+crab_inventory = {"count": 0}
 
 # Animations
 water_animation = WaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
@@ -50,7 +51,7 @@ while running:
         water_animation.update()
         water_animation.draw(screen)
     else:
-        underwater_animation.draw(screen)
+        underwater_animation.draw(screen, camera_x, camera_y)
 
     # Bait selector
     if selected_bait:
@@ -98,41 +99,19 @@ while running:
     # Draw the crab pots
     if boat.pots:
         for crab_pot in boat.pots:
-            screen_x = crab_pot.x - camera_x
-            screen_y = crab_pot.y - camera_y
-
-            if view_mode == "above":
-                screen.blit(crab_pot.buoy_sprite, (screen_x, screen_y))
-                
-            elif view_mode == "underwater":
-                screen.blit(crab_pot.underwater_pot_sprite, (screen_x, screen_y))
-
+            crab_pot.draw(screen, camera_x, camera_y, view_mode)
             crab_pot.check_for_crabs(all_crabs, all_food)
     
-    # Preferences display
-    averages = utils.calculate_average_preferences(all_crabs)
-    y_offset = 100
-    for food_type, avg in averages.items():
-        text = f"{food_type.__name__}: {avg:.2f}"
-        text_surface = font.render(text, True, (0, 0, 0))
-        screen.blit(text_surface, (10, y_offset))
-        y_offset += 20
     clock.tick(30)
-
-    # Draw the toggle button
-    button_color = (0, 100, 200) if view_mode == "above" else (0, 0, 100)
-    pygame.draw.rect(screen, button_color, toggle_button_rect)
-    text = font.render(f"View: {view_mode}", True, (255, 255, 255))
-    screen.blit(text, (toggle_button_rect.x + 10, toggle_button_rect.y + 10))
+    # Draw gui elements
+    gui_elements.draw_average_crab_food_preferences(screen, all_crabs, font)
+    gui_elements.draw_toggle_button(screen, toggle_button_rect, font, view_mode)
+    gui_elements.draw_current_crab_count(screen, crab_inventory, font)
 
     # Boat related logic
     if view_mode == "above":
         boat.update()
         boat.draw(screen, camera_x, camera_y)
-    
-    # Capture crab inventory
-    text = font.render(f"Caught crabs: {crab_inventory}", True, (0, 0, 0))
-    screen.blit(text, (config.SCREEN_WIDTH -200, 50))
     
     # Update the display
     pygame.display.flip()

@@ -62,4 +62,11 @@ class CrabPot:
                     print(f"Caught a crab chasing {type(self.bait).__name__}: {crab}")
                     self.caught_crabs.append(crab)
                     crabs.remove(crab)
+        
+    def draw(self, screen, camera_x, camera_y, view_mode):
+        if view_mode == "underwater":
+            screen.blit(self.underwater_pot_sprite, (self.x - camera_x, self.y - camera_y))
+        else:
+            screen.blit(self.buoy_sprite, (self.x - camera_x, self.y - camera_y))
+        
                     

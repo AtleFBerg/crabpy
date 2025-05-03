@@ -41,7 +41,7 @@ def world_food_respawn(all_food):
 
 def update_camera(boat):
 
-    # Target center based on crab pot
+    # Target center based on boat pot
     target_x = boat.x + boat.width // 2 - config.SCREEN_WIDTH // 2
     target_y = boat.base_y + boat.height // 2 - config.SCREEN_HEIGHT // 2
 
