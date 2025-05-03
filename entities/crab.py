@@ -24,7 +24,6 @@ class Crab:
     
     def update(self):
         self.energy -= 0.01
-        
 
     def generate_food_preferences(self):
         """Assign a random float between 0.1 and 1.0 for each available food."""
@@ -40,7 +39,6 @@ class Crab:
         # Find closest mate, but ignore rejected ones
         valid_mates = [mate for mate in all_crabs if mate is not self and id(mate) not in self.rejected_mates]
 
-        
         if not valid_mates:
             return  # No valid mates left
 

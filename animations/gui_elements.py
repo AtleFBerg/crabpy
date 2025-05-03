@@ -1,5 +1,6 @@
 import pygame
 import config
+from entities.crab import Crab
 import utils
 
 def draw_average_crab_food_preferences(screen, all_crabs, font):
@@ -27,3 +28,9 @@ def draw_selected_bait(screen, selected_bait, font):
         bait_text = "Bait: None"
     bait_surface = font.render(bait_text, True, (0, 0, 0))  
     screen.blit(bait_surface, (config.SCREEN_WIDTH - 200, 10))
+
+def draw_crab_count(all_crabs, screen):
+    m, f = Crab.count_sexes(all_crabs)
+    font = pygame.font.SysFont(None, 30)
+    text_surface = font.render(f"Males: {m}  Females: {f}", True, (0, 0, 0))
+    screen.blit(text_surface, (10, 10))  # Top-left corner    

@@ -46,14 +46,14 @@ for i in range(config.INITIAL_CRAB_COUNT):
 # Set up the game loop
 running = True
 while running:
+
+    clock.tick(30)
     # Background animation
     if view_mode == "above":
         water_animation.update()
         water_animation.draw(screen)
     else:
         underwater_animation.draw(screen, camera_x, camera_y)
-
-
 
     # Crab related logic
     food_to_remove = []
@@ -68,7 +68,6 @@ while running:
         if crab.food_to_remove:
             food_to_remove.append(crab.food_to_remove)
             crab.food_to_remove = None 
-    utils.count_crabs(all_crabs, screen)
 
     # Food related logic
     if food_to_remove:
@@ -96,12 +95,13 @@ while running:
             crab_pot.draw(screen, camera_x, camera_y, view_mode)
             crab_pot.check_for_crabs(all_crabs, all_food)
     
-    clock.tick(30)
     # Draw gui elements
     gui_elements.draw_average_crab_food_preferences(screen, all_crabs, font)
     gui_elements.draw_toggle_button(screen, toggle_button_rect, font, view_mode)
     gui_elements.draw_current_crab_count(screen, crab_inventory, font)
     gui_elements.draw_selected_bait(screen, selected_bait, font)
+    gui_elements.draw_crab_count(all_crabs, screen)
+
 
     # Boat related logic
     if view_mode == "above":

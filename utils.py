@@ -51,8 +51,3 @@ def update_camera(boat):
 
     return camera_x, camera_y
 
-def count_crabs(all_crabs, screen):
-    m, f = Crab.count_sexes(all_crabs)
-    font = pygame.font.SysFont(None, 30)
-    text_surface = font.render(f"Males: {m}  Females: {f}", True, (0, 0, 0))
-    screen.blit(text_surface, (10, 10))  # Top-left corner    
