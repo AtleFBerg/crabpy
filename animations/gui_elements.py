@@ -19,3 +19,11 @@ def draw_current_crab_count(screen, crab_inventory, font):
     crab_count_text = f"Caught crabs: {crab_inventory['count']}"
     crab_count_surface = font.render(crab_count_text, True, (0, 0, 0)) 
     screen.blit(crab_count_surface, (config.SCREEN_WIDTH -200, 50)) 
+
+def draw_selected_bait(screen, selected_bait, font):
+    if selected_bait:
+        bait_text = f"Bait: {selected_bait.__class__.__name__}"
+    else:
+        bait_text = "Bait: None"
+    bait_surface = font.render(bait_text, True, (0, 0, 0))  
+    screen.blit(bait_surface, (config.SCREEN_WIDTH - 200, 10))

@@ -53,13 +53,7 @@ while running:
     else:
         underwater_animation.draw(screen, camera_x, camera_y)
 
-    # Bait selector
-    if selected_bait:
-        bait_text = f"Bait: {selected_bait.__class__.__name__}"
-    else:
-        bait_text = "Bait: None"
-    bait_surface = font.render(bait_text, True, (0, 0, 0))  # Black text
-    screen.blit(bait_surface, (config.SCREEN_WIDTH - 200, 10))  # Top-left corner
+
 
     # Crab related logic
     food_to_remove = []
@@ -107,6 +101,7 @@ while running:
     gui_elements.draw_average_crab_food_preferences(screen, all_crabs, font)
     gui_elements.draw_toggle_button(screen, toggle_button_rect, font, view_mode)
     gui_elements.draw_current_crab_count(screen, crab_inventory, font)
+    gui_elements.draw_selected_bait(screen, selected_bait, font)
 
     # Boat related logic
     if view_mode == "above":
