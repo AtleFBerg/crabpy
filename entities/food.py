@@ -1,10 +1,17 @@
 import random
 import time
-
 import pygame
 import config
 
+FOOD_IMAGES = {}
 
+def load_food_images():
+    food_types = [Seaweed, Clam, FishRemains, Plankton, Starfish, Shrimp]
+    for cls in food_types:
+        name = cls.__name__
+        image = pygame.image.load(f"assets/sprites/{name}.png").convert_alpha()
+        FOOD_IMAGES[name] = pygame.transform.scale(image, (25, 25))
+        
 class Food():
     def __init__(self, energy, width=25, height=25, time_to_multiply=None, is_bait=False):
         self.energy = energy
@@ -14,7 +21,7 @@ class Food():
         self.x = random.randint(0, config.WORLD_WIDTH - self.width)
         self.y = random.randint(0, config.WORLD_HEIGHT - self.height)
         self.time_to_multiply = time_to_multiply
-        self.sprite = self.sprite()  # Placeholder for the food sprite
+        self.sprite = FOOD_IMAGES[self.__class__.__name__]
 
     def eat(self, crab):
         crab.energy += self.energy
@@ -22,9 +29,6 @@ class Food():
         self.consumed = True
         self.last_eaten_time = time.time()
 
-    def sprite(self):
-        return pygame.transform.scale(pygame.image.load(f"sprites/{self.__class__.__name__}.png").convert_alpha(), (25, 25))
-    
     def update(self, food_counts):
         if self.time_to_multiply is not None:
             self.time_to_multiply -= 1

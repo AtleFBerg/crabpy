@@ -5,7 +5,7 @@ class WaterAnimation:
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.water_tile = pygame.image.load("sprites/water_tile.png").convert_alpha()
+        self.water_tile = pygame.image.load("assets/sprites/water_tile.png").convert_alpha()
         self.water_tile = pygame.transform.scale(self.water_tile, (32, 32))
         self.water_tile_width, self.water_tile_height = self.water_tile.get_width(), self.water_tile.get_height()
         self.scroll_x = 0

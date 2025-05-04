@@ -30,7 +30,6 @@ def world_food_respawn(all_food):
         Starfish: 0.1,       # 10% chance
         Shrimp: 0.1         # 5% chance
     }
-    # Generate exactly 20 food items based on the given probabilities
     food_classes = list(food_weights.keys())
     food_probabilities = list(food_weights.values())
 

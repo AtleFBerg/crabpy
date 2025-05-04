@@ -17,9 +17,9 @@ class CrabPot:
         self.caught_crabs = []
         self.is_full = False
         self.number_of_crabs_allowed = 25
-        self.buoy_sprite = pygame.image.load("sprites/buoy.png").convert_alpha()
+        self.buoy_sprite = pygame.image.load("assets/sprites/buoy.png").convert_alpha()
         self.buoy_sprite = pygame.transform.scale(self.buoy_sprite, (self.width, self.height))
-        self.underwater_pot_sprite = pygame.image.load("sprites/crab_pot.png").convert_alpha()
+        self.underwater_pot_sprite = pygame.image.load("assets/sprites/crab_pot.png").convert_alpha()
         self.underwater_pot_sprite = pygame.transform.scale(self.underwater_pot_sprite, (self.width, self.height))
 
     def set_bait(self, bait_instance):

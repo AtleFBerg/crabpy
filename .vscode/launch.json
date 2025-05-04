@@ -5,7 +5,7 @@
             "name": "Run CrabPy",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/crabpy.py",
+            "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "env": {},

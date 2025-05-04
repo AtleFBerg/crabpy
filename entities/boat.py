@@ -12,7 +12,7 @@ class Boat:
         self.width = 48
         self.height = 32
         self.speed = 3
-        self.sprite = pygame.image.load("sprites/boat.png").convert_alpha()
+        self.sprite = pygame.image.load("assets/sprites/boat.png").convert_alpha()
         self.sprite = pygame.transform.scale(self.sprite, (144, 96))
         self.facing_left = True
         self.pots: List[CrabPot] = []

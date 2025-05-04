@@ -12,7 +12,7 @@ class Crab:
         self.speed = 1
         self.width = 50
         self.height = 50
-        self.sprite = pygame.image.load("sprites/crabby.png").convert_alpha()
+        self.sprite = pygame.image.load("assets/sprites/crabby.png").convert_alpha()
         self.sprite = pygame.transform.scale(self.sprite, (self.width, self.height))
         self.energy = random.randint(10, 50) if energy is None else energy
         self.looking_for_mate = False
