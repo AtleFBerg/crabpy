@@ -136,18 +136,20 @@ async def main():
 
         # Movement and input
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             boat.x -= 2
             if not boat.facing_left:
                 boat.facing_left = True
                 boat.sprite = pygame.transform.flip(boat.sprite, True, False)
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             boat.x += 2
             if boat.facing_left:
                 boat.facing_left = False
                 boat.sprite = pygame.transform.flip(boat.sprite, True, False)
-        if keys[pygame.K_UP]: boat.base_y -= 2
-        if keys[pygame.K_DOWN]: boat.base_y += 2
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            boat.base_y -= 2
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            boat.base_y += 2
         if keys[pygame.K_1]: selected_bait = Seaweed(is_bait=True)
         if keys[pygame.K_2]: selected_bait = Shrimp(is_bait=True)
         if keys[pygame.K_3]: selected_bait = Clam(is_bait=True)
