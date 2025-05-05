@@ -8,7 +8,7 @@ FOOD_IMAGES = {}
 def load_food_images():
     food_types = [Seaweed, Clam, FishRemains, Plankton, Starfish, Shrimp]
     for cls in food_types:
-        name = cls.__name__
+        name = cls.__name__.lower()
         image = pygame.image.load(f"assets/sprites/{name}.png").convert_alpha()
         FOOD_IMAGES[name] = pygame.transform.scale(image, (25, 25))
         
@@ -21,7 +21,7 @@ class Food():
         self.x = random.randint(0, config.WORLD_WIDTH - self.width)
         self.y = random.randint(0, config.WORLD_HEIGHT - self.height)
         self.time_to_multiply = time_to_multiply
-        self.sprite = FOOD_IMAGES[self.__class__.__name__]
+        self.sprite = FOOD_IMAGES[self.__class__.__name__.lower()]
 
     def eat(self, crab):
         crab.energy += self.energy
