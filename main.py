@@ -114,10 +114,7 @@ async def main():
         # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                if sys.platform in ("emscripten", "wasm32"):
-                    print("Ignoring quit in browser")
-                else:
-                    running = False
+                running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     MARGIN = 100
