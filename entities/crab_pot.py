@@ -48,6 +48,8 @@ class CrabPot:
 
     def check_for_crabs(self, crabs: list[Crab], all_food: list[Food]):
         if self.is_full:
+            self.blink_alpha, self.blink_direction = bouy_glow_effect(self.buoy_sprite, self.x, self.y, self.width, self.height, self.blink_alpha, self.blink_direction)
+            self.buoy_sprite.set_alpha(self.blink_alpha)
             return
         if self.time_to_live <= 0:
             self.blink_alpha, self.blink_direction = bouy_glow_effect(self.buoy_sprite, self.x, self.y, self.width, self.height, self.blink_alpha, self.blink_direction)

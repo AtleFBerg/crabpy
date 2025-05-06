@@ -196,7 +196,7 @@ class Crab:
 
     def get_speed(self):
         """Smooth speed scaling with energy."""
-        return max(1, int(self.energy ** 0.5 / 4))  # Speed grows slower but more natural
+        return max(1, self.energy ** 0.5 / 6)  # Speed grows slower but more natural
 
     def move_left(self):
         if self.x > 0:
@@ -227,7 +227,7 @@ class Crab:
     def adjust_food_preferences(self, eaten_food_type):
         for food_name in self.preferred_foods:
             if food_name == eaten_food_type.__name__:
-                self.preferred_foods[food_name] += 0.05  # Reward the one just eaten
+                self.preferred_foods[food_name] += 0.1  # Reward the one just eaten
             else:
                 self.preferred_foods[food_name] = max(0, self.preferred_foods[food_name] - 0.0025)  # Light decay
 
