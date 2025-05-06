@@ -52,11 +52,10 @@ async def main():
 
     while running:
         clock.tick(30)
-        screen.fill((0, 255, 0))  # Clear the screen
         # Background animation
         if view_mode == "above":
             water_animation.update()
-            water_animation.draw(screen)
+            water_animation.draw(screen, camera_x, camera_y)
         else:
             underwater_animation.draw(screen, camera_x, camera_y)
 
@@ -117,6 +116,8 @@ async def main():
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    if not selected_bait:
+                        continue
                     MARGIN = 100
                     pot_under_boat = None
                     for pot in boat.pots:
