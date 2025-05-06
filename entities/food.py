@@ -30,6 +30,8 @@ class Food():
         self.last_eaten_time = time.time()
 
     def update(self, food_counts):
+        if self.is_bait:
+            return
         if self.time_to_multiply is not None:
             self.time_to_multiply -= 1
             if self.time_to_multiply <= 0:
@@ -39,9 +41,14 @@ class Food():
                 return self.multiply()
             
     def multiply(self):
+        offset_range = 350 
+        new_x = self.x + random.randint(-offset_range, offset_range)
+        new_y = self.y + random.randint(-offset_range, offset_range)
+        new_x = max(0, min(config.WORLD_WIDTH - self.width, new_x))
+        new_y = max(0, min(config.WORLD_HEIGHT - self.height, new_y))
         new_food = self.__class__()
-        new_food.x = random.randint(0, config.WORLD_WIDTH - new_food.width)
-        new_food.y = random.randint(0, config.SCREEN_HEIGHT - new_food.height)
+        new_food.x = new_x
+        new_food.y = new_y
         return new_food
    
 class Seaweed(Food):

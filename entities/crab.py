@@ -6,7 +6,7 @@ import config
 
 class Crab:
    
-    def __init__(self, x=None, y=None, energy=None, preferred_foods=None):
+    def __init__(self):
         self.x = random.randint(0, config.WORLD_WIDTH - 50)
         self.y = random.randint(0, config.SCREEN_HEIGHT - 50)
         self.speed = 1
@@ -14,7 +14,7 @@ class Crab:
         self.height = 50
         self.sprite = pygame.image.load("assets/sprites/crabby.png").convert_alpha()
         self.sprite = pygame.transform.scale(self.sprite, (self.width, self.height))
-        self.energy = random.randint(10, 50) if energy is None else energy
+        self.energy = random.randint(10, 45) 
         self.looking_for_mate = False
         self.sex = random.choice(['M', 'F'])
         self.rejected_mates = {}
@@ -49,7 +49,9 @@ class Crab:
                 self.energy -= 40
                 closest_mate.energy -= 40
 
-                baby_crab = Crab(x=self.x, y=self.y, energy=20)
+                baby_crab = Crab()
+                baby_crab.x = self.x + random.randint(-50, 50)
+                baby_crab.y = self.y + random.randint(-50, 50)
                 baby_crab.preferred_foods = self.inherit_preferences(self.preferred_foods, closest_mate.preferred_foods)
                 all_crabs.append(baby_crab)
 

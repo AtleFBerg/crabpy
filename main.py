@@ -1,6 +1,5 @@
 import asyncio
 from collections import defaultdict
-import sys
 import pygame
 from animations.underwater_animation import UnderwaterAnimation
 from animations.water_animation import WaterAnimation
