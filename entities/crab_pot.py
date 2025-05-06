@@ -2,6 +2,7 @@ import time
 import pygame
 
 from entities.food import Food
+from animations.bouy_glow_effect import bouy_glow_effect
 
 from .crab import Crab
 
@@ -21,6 +22,9 @@ class CrabPot:
         self.buoy_sprite = pygame.transform.scale(self.buoy_sprite, (self.width, self.height))
         self.underwater_pot_sprite = pygame.image.load("assets/sprites/crab_pot.png").convert_alpha()
         self.underwater_pot_sprite = pygame.transform.scale(self.underwater_pot_sprite, (self.width, self.height))
+        self.time_to_live = 300 * 30
+        self.blink_alpha = 255         # current alpha (brightness)
+        self.blink_direction = -5      # decrease alpha (fade out)
 
     def set_bait(self, bait_instance):
         self.bait = bait_instance
@@ -45,6 +49,18 @@ class CrabPot:
     def check_for_crabs(self, crabs: list[Crab], all_food: list[Food]):
         if self.is_full:
             return
+        if self.time_to_live <= 0:
+            self.blink_alpha, self.blink_direction = bouy_glow_effect(self.buoy_sprite, self.x, self.y, self.width, self.height, self.blink_alpha, self.blink_direction)
+            self.buoy_sprite.set_alpha(self.blink_alpha)
+            return
+        self.time_to_live -= 1
+        if self.time_to_live <= 0:
+            print("Crab pot ran out of bait!")
+            if self.bait in all_food:
+                all_food.remove(self.bait)
+            self.bait = None
+            self.bait_sprite = None
+            return
         for crab in crabs[:]:  # Work on a copy to allow safe removal
             if self.area().colliderect(pygame.Rect(crab.x, crab.y, crab.width, crab.height)):
                 if self.number_of_crabs_allowed == self.caught_crabs.__len__():
@@ -62,6 +78,8 @@ class CrabPot:
                     print(f"Caught a crab chasing {type(self.bait).__name__}: {crab}")
                     self.caught_crabs.append(crab)
                     crabs.remove(crab)
+
+                
         
     def draw(self, screen, camera_x, camera_y, view_mode):
         if view_mode == "underwater":
