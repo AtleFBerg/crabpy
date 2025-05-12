@@ -83,8 +83,8 @@ class CrabPot:
 
                 
         
-    def draw(self, screen, camera_x, camera_y, view_mode):
-        if view_mode == "underwater":
+    def draw(self, screen, camera_x, camera_y, underwater: bool):
+        if underwater:
             screen.blit(self.underwater_pot_sprite, (self.x - camera_x, self.y - camera_y))
         else:
             screen.blit(self.buoy_sprite, (self.x - camera_x, self.y - camera_y))

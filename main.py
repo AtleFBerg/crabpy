@@ -10,6 +10,7 @@ import services.food_service as food_service
 import animations.gui_elements as gui_elements
 import utils
 import config
+from views.sea import SeaView
 
 
 pygame.init()
@@ -34,12 +35,14 @@ all_crabs: list[Crab] = []
 crab_inventory = {"count": 0}
 running = True
 
-# Animations
-water_animation = WaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
-underwater_animation = UnderwaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
+# Initialize views
+views = {
+    "sea": SeaView(),
+}
+view = "sea"
+current_view = views[view]
 
-# # Toggle button for view mode
-view_mode = "above"
+# Toggle button for view mode
 toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
 
 # Set up the crabs
@@ -47,67 +50,20 @@ for i in range(config.INITIAL_CRAB_COUNT):
     all_crabs.append(Crab())
 
 async def main():
-    global camera_x, camera_y, selected_bait, timer, view_mode, all_crabs, all_food, crab_inventory, running
+    global camera_x, camera_y, selected_bait, timer, view, all_crabs, all_food, crab_inventory, running, current_view
 
     while running:
         clock.tick(30)
-        # Background animation
-        if view_mode == "above":
-            water_animation.update()
-            water_animation.draw(screen, camera_x, camera_y)
-        else:
-            underwater_animation.draw(screen, camera_x, camera_y)
 
-        # Crab logic
-        food_to_remove = []
-        for crab in all_crabs:
-            crab.update()
-            if crab.energy <= 0.0:
-                all_crabs.remove(crab)
-                continue
-            if view_mode == "underwater":
-                screen.blit(crab.sprite, (crab.x - camera_x, crab.y - camera_y))
-            crab.make_decision(all_crabs=all_crabs, potential_food=all_food)
-            if crab.food_to_remove:
-                food_to_remove.append(crab.food_to_remove)
-                crab.food_to_remove = None
-
-        # Food logic
-        if food_to_remove:
-            food_service.remove_food(food_to_remove, all_food)
-
-        food_counts = defaultdict(int)
-        for food in all_food:
-            food_counts[type(food)] += 1
-        timer += 1
-        if timer % 2000 == 0:
-            utils.world_food_respawn(all_food)
-            timer = 0
-
-        for food in all_food:
-            new_food = food.update(food_counts)
-            if new_food:
-                all_food.append(new_food)
-            if view_mode == "underwater":
-                screen.blit(food.sprite, (food.x - camera_x, food.y - camera_y))
-
-        # Crab pots
-        if boat.pots:
-            for crab_pot in boat.pots:
-                crab_pot.draw(screen, camera_x, camera_y, view_mode)
-                crab_pot.check_for_crabs(all_crabs, all_food)
+        # Update and draw the current view
+        current_view.update(screen, camera_x, camera_y, all_crabs, all_food, timer, boat)
 
         # GUI
         gui_elements.draw_average_crab_food_preferences(screen, all_crabs, font)
-        gui_elements.draw_toggle_button(screen, toggle_button_rect, font, view_mode)
+        gui_elements.draw_toggle_button(screen, toggle_button_rect, font, view)
         gui_elements.draw_current_crab_count(screen, crab_inventory, font)
         gui_elements.draw_selected_bait(screen, selected_bait, font)
         gui_elements.draw_crab_count(all_crabs, screen)
-
-        # Boat logic
-        if view_mode == "above":
-            boat.update()
-            boat.draw(screen, camera_x, camera_y)
 
         # Handle events
         for event in pygame.event.get():
@@ -129,7 +85,9 @@ async def main():
                         boat.drop_pot(selected_bait, all_food)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if toggle_button_rect.collidepoint(event.pos):
-                    view_mode = "underwater" if view_mode == "above" else "above"
+                    current_view.underwater = not current_view.underwater
+                    # view = "sea" if view == "town" else "town"  # Example toggle logic
+                    # current_view = views[view]
 
         # Movement and input
         keys = pygame.key.get_pressed()

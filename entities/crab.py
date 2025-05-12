@@ -195,9 +195,8 @@ class Crab:
             self.look_for_food(all_food)
 
     def get_speed(self):
-        """Smooth speed scaling with energy."""
-        return max(1, self.energy ** 0.5 / 6)  # Speed grows slower but more natural
-
+        return max(1, self.energy ** 0.5 / 6)
+    
     def move_left(self):
         if self.x > 0:
             self.x -= self.get_speed()
