@@ -66,53 +66,15 @@ async def main():
         gui_elements.draw_crab_count(all_crabs, screen)
 
         # Handle events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    if not selected_bait:
-                        continue
-                    MARGIN = 100
-                    pot_under_boat = None
-                    for pot in boat.pots:
-                        if abs(pot.x - boat.x) < MARGIN // 2 and abs(pot.y - boat.base_y) < MARGIN // 2:
-                            pot_under_boat = pot
-                            break
-                    if pot_under_boat:
-                        boat.raise_pot(pot_under_boat, all_food, crab_inventory)
-                    else:
-                        boat.drop_pot(selected_bait, all_food)
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if toggle_button_rect.collidepoint(event.pos):
-                    current_view.underwater = not current_view.underwater
-                    # view = "sea" if view == "town" else "town"  # Example toggle logic
-                    # current_view = views[view]
+        events = pygame.event.get()
+        current_view.handle_events(events, selected_bait, boat, all_food, crab_inventory, toggle_button_rect)
 
         # Movement and input
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            boat.x -= 2
-            if not boat.facing_left:
-                boat.facing_left = True
-                boat.sprite = pygame.transform.flip(boat.sprite, True, False)
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            boat.x += 2
-            if boat.facing_left:
-                boat.facing_left = False
-                boat.sprite = pygame.transform.flip(boat.sprite, True, False)
-        if keys[pygame.K_UP] or keys[pygame.K_w]:
-            boat.base_y -= 2
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            boat.base_y += 2
-        if keys[pygame.K_1]: selected_bait = Seaweed(is_bait=True)
-        if keys[pygame.K_2]: selected_bait = Shrimp(is_bait=True)
-        if keys[pygame.K_3]: selected_bait = Clam(is_bait=True)
-        if keys[pygame.K_4]: selected_bait = FishRemains(is_bait=True)
-        if keys[pygame.K_5]: selected_bait = Plankton(is_bait=True)
-        if keys[pygame.K_6]: selected_bait = Starfish(is_bait=True)
-
+        selected_bait = current_view.handle_keys(keys, boat, selected_bait)
+        
         camera_x, camera_y = utils.update_camera(boat)
+        
         pygame.display.flip()
         await asyncio.sleep(0)
 
