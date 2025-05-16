@@ -56,11 +56,8 @@ class Crab:
                 all_crabs.append(baby_crab)
 
             else:
-                # Use `id(closest_mate)` as the key instead of the object itself
                 self.rejected_mates[id(closest_mate)] = current_time
-
-            return  # Stop moving closer after attempting to mate
-
+            return 
         self.move_closer(closest_mate)
 
     def inherit_preferences(self, parent1_prefs, parent2_prefs):
