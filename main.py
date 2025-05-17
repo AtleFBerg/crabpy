@@ -7,7 +7,6 @@ import config
 from views.sea import SeaView
 from views.start_menu import StartMenuView
 
-
 pygame.init()
 pygame.font.init()
 font = pygame.font.SysFont(None, 30)
@@ -18,19 +17,17 @@ pygame.display.set_caption('Crabpy')
 clock = pygame.time.Clock()
 load_food_images()
 
-
 # World variables
 camera_x = 0
 camera_y = 0
 timer = 0
-boat = Boat(100, 100)
 
 crab_inventory = {"count": 0}
 running = True
 
 # Initialize views
 views = {
-    "start_menu": StartMenuView(StartMenuView.load_background()),
+    "start_menu": StartMenuView(),
     "sea": SeaView(),
 }
 current_view = views["start_menu"]
@@ -44,20 +41,20 @@ async def main():
         clock.tick(30)
 
         # Update and draw the current view
-        current_view.update(screen, camera_x, camera_y, timer, boat, crab_inventory, font)
+        current_view.update(screen, camera_x, camera_y, timer, crab_inventory, font)
 
         # Handle events
         events = pygame.event.get()
-        new_view_key = current_view.handle_events(events, boat, crab_inventory)
+        new_view_key = current_view.handle_events(events, crab_inventory)
         if new_view_key and new_view_key in views:
             current_view = views[new_view_key]
 
         # Movement and input (only if not in menu)
         if hasattr(current_view, 'handle_keys'):
             keys = pygame.key.get_pressed()
-            current_view.handle_keys(keys, boat)
+            current_view.handle_keys(keys)
         
-        camera_x, camera_y = utils.update_camera(boat)
+        camera_x, camera_y = current_view.update_camera()
         
         pygame.display.flip()
         await asyncio.sleep(0)
