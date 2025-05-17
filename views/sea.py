@@ -90,6 +90,9 @@ class SeaView(BaseView):
 
     def handle_events(self, events, boat, crab_inventory):
         for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     if not self.selected_bait:

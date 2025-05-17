@@ -1,16 +1,11 @@
 import asyncio
-from collections import defaultdict
 import pygame
-from animations.underwater_animation import UnderwaterAnimation
-from animations.water_animation import WaterAnimation
 from entities.boat import Boat
-from entities.crab import Crab
 from entities.food import *
-import services.food_service as food_service
-import animations.gui_elements as gui_elements
 import utils
 import config
 from views.sea import SeaView
+from views.start_menu import StartMenuView
 
 
 pygame.init()
@@ -23,6 +18,7 @@ pygame.display.set_caption('Crabpy')
 clock = pygame.time.Clock()
 load_food_images()
 
+
 # World variables
 camera_x = 0
 camera_y = 0
@@ -34,10 +30,10 @@ running = True
 
 # Initialize views
 views = {
+    "start_menu": StartMenuView(StartMenuView.load_background()),
     "sea": SeaView(),
 }
-
-current_view = views["sea"]
+current_view = views["start_menu"]
 
 # Toggle button for view mode
 
@@ -52,11 +48,14 @@ async def main():
 
         # Handle events
         events = pygame.event.get()
-        current_view.handle_events(events, boat, crab_inventory)
+        new_view_key = current_view.handle_events(events, boat, crab_inventory)
+        if new_view_key and new_view_key in views:
+            current_view = views[new_view_key]
 
-        # Movement and input
-        keys = pygame.key.get_pressed()
-        current_view.handle_keys(keys, boat)
+        # Movement and input (only if not in menu)
+        if hasattr(current_view, 'handle_keys'):
+            keys = pygame.key.get_pressed()
+            current_view.handle_keys(keys, boat)
         
         camera_x, camera_y = utils.update_camera(boat)
         
