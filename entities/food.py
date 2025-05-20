@@ -2,6 +2,7 @@ import random
 import time
 import pygame
 import config
+import math
 
 FOOD_IMAGES = {}
 
@@ -41,9 +42,12 @@ class Food():
                 return self.multiply()
             
     def multiply(self):
-        offset_range = 350 
-        new_x = self.x + random.randint(-offset_range, offset_range)
-        new_y = self.y + random.randint(-offset_range, offset_range)
+        offset_range = 120  # Try 80-150 for best results
+        angle = random.uniform(0, 2 * 3.14159)
+        distance = random.uniform(0, offset_range)
+        new_x = int(self.x + distance * math.cos(angle))
+        new_y = int(self.y + distance * math.sin(angle))
+        # Clamp to bounds
         new_x = max(0, min(config.WORLD_WIDTH - self.width, new_x))
         new_y = max(0, min(config.WORLD_HEIGHT - self.height, new_y))
         new_food = self.__class__()

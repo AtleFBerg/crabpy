@@ -83,10 +83,14 @@ class CrabPot:
 
                 
         
-    def draw(self, screen, camera_x, camera_y, underwater: bool):
+    def draw(self, screen, camera_x, camera_y, underwater: bool, highlight=False):
         if underwater:
             screen.blit(self.underwater_pot_sprite, (self.x - camera_x, self.y - camera_y))
+            if highlight:
+                pygame.draw.rect(screen, (255, 255, 0), (self.x - camera_x, self.y - camera_y, self.width, self.height), 3)
         else:
             screen.blit(self.buoy_sprite, (self.x - camera_x, self.y - camera_y))
-        
-                    
+            if highlight:
+                pygame.draw.rect(screen, (255, 255, 0), (self.x - camera_x, self.y - camera_y, self.width, self.height), 3)
+
+

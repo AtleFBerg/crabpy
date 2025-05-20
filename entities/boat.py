@@ -37,7 +37,7 @@ class Boat:
             all_food.append(new_bait)
 
     def raise_pot(self, pot: CrabPot, all_food, crab_inventory):
-        crab_inventory["count"] += len(pot.caught_crabs)
+        crab_inventory["crab_count"] += len(pot.caught_crabs)
         pot.raise_pot(all_food)
         self.pots.remove(pot)
 

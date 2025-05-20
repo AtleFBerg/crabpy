@@ -26,20 +26,21 @@ class SeaView(BaseView):
         self.all_crabs: list[Crab] = [Crab() for _ in range(config.INITIAL_CRAB_COUNT)]
         self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
         self.boat = Boat(100, 100)
+        self.world_food_respawn_timer = 0
 
-    def update(self, screen, camera_x, camera_y, timer, crab_inventory, font):
+    def update(self, screen, camera_x, camera_y, inventory, font):
         if self.underwater:
             self.underwater_animation.draw(screen, camera_x, camera_y)
         else:
             self.water_animation.update()
             self.water_animation.draw(screen, camera_x, camera_y)
-        self.update_crabs(screen, self.all_crabs, self.all_food, camera_x, camera_y)
-        self.draw_boat(self.boat, screen, camera_x, camera_y)
-        self.draw_pots(self.boat, screen, camera_x, camera_y, self.underwater, self.all_crabs, self.all_food)
-        self.draw_food(screen, self.all_food, camera_x, camera_y, timer)
+        self.update_crabs(screen, camera_x, camera_y)
+        self.draw_boat(screen, camera_x, camera_y)
+        self.draw_pots(screen, camera_x, camera_y)
+        self.draw_food(screen, camera_x, camera_y)
         gui_elements.draw_average_crab_food_preferences(screen, self.all_crabs, font)
         gui_elements.draw_toggle_button(screen, self.toggle_button_rect, font, "Above" if not self.underwater else "Underwater")
-        gui_elements.draw_current_crab_count(screen, crab_inventory, font)
+        gui_elements.draw_current_crab_count(screen, inventory, font)
         gui_elements.draw_selected_bait(screen, self.selected_bait, font)
         gui_elements.draw_crab_count(self.all_crabs, screen)    
     
@@ -50,48 +51,58 @@ class SeaView(BaseView):
         # Additional drawing logic if needed
         pass
 
-    def update_crabs(self, screen, all_crabs, all_food, camera_x, camera_y):
+    def update_crabs(self, screen, camera_x, camera_y):
         food_to_remove = []
-        for crab in all_crabs:
+        for crab in self.all_crabs:
             crab.update()
             if crab.energy <= 0.0:
-                all_crabs.remove(crab)
+                self.all_crabs.remove(crab)
                 continue
             if self.underwater:
                 screen.blit(crab.sprite, (crab.x - camera_x, crab.y - camera_y))
-            crab.make_decision(all_crabs=all_crabs, potential_food=all_food)
+            crab.make_decision(all_crabs=self.all_crabs, potential_food=self.all_food)
             if crab.food_to_remove:
                 food_to_remove.append(crab.food_to_remove)
                 crab.food_to_remove = None
         if food_to_remove:
-            food_service.remove_food(food_to_remove, all_food)
+            food_service.remove_food(food_to_remove, self.all_food)
 
-    def draw_food(self, screen, all_food, camera_x, camera_y, timer):
+    def draw_food(self, screen, camera_x, camera_y):
         food_counts = defaultdict(int)
-        for food in all_food:
+        for food in self.all_food:
             food_counts[type(food)] += 1
-        timer += 1
-        if timer % 2000 == 0:
-            utils.world_food_respawn(all_food)
-            timer = 0
+        self.world_food_respawn_timer += 1
+        if self.world_food_respawn_timer % 2000 == 0:
+            utils.world_food_respawn(self.all_food)
+            self.world_food_respawn_timer = 0
         
-        for food in all_food:
+        for food in self.all_food:
             new_food = food.update(food_counts)
             if new_food:
-                all_food.append(new_food)
+                self.all_food.append(new_food)
             if self.underwater:
                 screen.blit(food.sprite, (food.x - camera_x, food.y - camera_y))
     
-    def draw_boat(self, boat, screen, camera_x, camera_y):
-        boat.update()
+    def draw_boat(self, screen, camera_x, camera_y):
+        self.boat.update()
         if not self.underwater:
-            boat.draw(screen, camera_x, camera_y)
+            self.boat.draw(screen, camera_x, camera_y)
     
-    def draw_pots(self, boat, screen, camera_x, camera_y, underwater, all_crabs, all_food):
-        if boat.pots:
-            for crab_pot in boat.pots:
-                crab_pot.draw(screen, camera_x, camera_y, underwater)
-                crab_pot.check_for_crabs(all_crabs, all_food)
+    def draw_pots(self, screen, camera_x, camera_y):
+        pot_under_boat = None
+        MARGIN = 100
+        # Find pot under boat
+        if self.boat.pots:
+            for pot in self.boat.pots:
+                if abs(pot.x - self.boat.x) < MARGIN // 2 and abs(pot.y - self.boat.base_y) < MARGIN // 2:
+                    pot_under_boat = pot
+                    break
+        # Draw pots, highlighting the one under the boat
+        if self.boat.pots:
+            for crab_pot in self.boat.pots:
+                highlight = (crab_pot is pot_under_boat)
+                crab_pot.draw(screen, camera_x, camera_y, self.underwater, highlight=highlight)
+                crab_pot.check_for_crabs(self.all_crabs, self.all_food)
 
     def handle_events(self, events, crab_inventory):
         for event in events:

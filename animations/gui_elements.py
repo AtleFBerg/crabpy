@@ -16,8 +16,8 @@ def draw_toggle_button(screen, toggle_button_rect, font, view_mode):
     text = font.render(f"View: {view_mode}", True, (255, 255, 255))
     screen.blit(text, (toggle_button_rect.x + 10, toggle_button_rect.y + 10))
 
-def draw_current_crab_count(screen, crab_inventory, font):
-    crab_count_text = f"Caught crabs: {crab_inventory['count']}"
+def draw_current_crab_count(screen, inventory, font):
+    crab_count_text = f"Caught crabs: {inventory['crab_count']}"
     crab_count_surface = font.render(crab_count_text, True, (0, 0, 0)) 
     screen.blit(crab_count_surface, (config.SCREEN_WIDTH -200, 50)) 
 

@@ -1,8 +1,6 @@
 import asyncio
 import pygame
-from entities.boat import Boat
 from entities.food import *
-import utils
 import config
 from views.sea import SeaView
 from views.start_menu import StartMenuView
@@ -20,9 +18,8 @@ load_food_images()
 # World variables
 camera_x = 0
 camera_y = 0
-timer = 0
 
-crab_inventory = {"count": 0}
+inventory = {"crab_count": 0}
 running = True
 
 # Initialize views
@@ -35,17 +32,17 @@ current_view = views["start_menu"]
 # Toggle button for view mode
 
 async def main():
-    global camera_x, camera_y, timer, crab_inventory, running, current_view
+    global camera_x, camera_y, inventory, running, current_view
 
     while running:
         clock.tick(30)
 
         # Update and draw the current view
-        current_view.update(screen, camera_x, camera_y, timer, crab_inventory, font)
+        current_view.update(screen, camera_x, camera_y, inventory, font)
 
         # Handle events
         events = pygame.event.get()
-        new_view_key = current_view.handle_events(events, crab_inventory)
+        new_view_key = current_view.handle_events(events, inventory)
         if new_view_key and new_view_key in views:
             current_view = views[new_view_key]
 
