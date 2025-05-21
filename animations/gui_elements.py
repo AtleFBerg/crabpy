@@ -17,9 +17,12 @@ def draw_toggle_button(screen, toggle_button_rect, font, view_mode):
     screen.blit(text, (toggle_button_rect.x + 10, toggle_button_rect.y + 10))
 
 def draw_current_crab_count(screen, inventory, font):
-    crab_count_text = f"Caught crabs: {inventory['crab_count']}"
-    crab_count_surface = font.render(crab_count_text, True, (0, 0, 0)) 
-    screen.blit(crab_count_surface, (config.SCREEN_WIDTH -200, 50)) 
+    y = 50
+    for key, value in inventory.items():
+        text = f"{key.replace('_', ' ').capitalize()}: {value}"
+        text_surface = font.render(text, True, (0, 0, 0))
+        screen.blit(text_surface, (config.SCREEN_WIDTH - 200, y))
+        y += 30
 
 def draw_selected_bait(screen, selected_bait, font):
     if selected_bait:
@@ -33,4 +36,17 @@ def draw_crab_count(all_crabs, screen):
     m, f = Crab.count_sexes(all_crabs)
     font = pygame.font.SysFont(None, 30)
     text_surface = font.render(f"Males: {m}  Females: {f}", True, (0, 0, 0))
-    screen.blit(text_surface, (10, 10))  # Top-left corner    
+    screen.blit(text_surface, (10, 10))  # Top-left corner
+
+def draw_to_town_arrow(screen, camera_x, camera_y):
+    arrow_image = pygame.image.load('assets/arrow.png').convert_alpha()
+    arrow_image = pygame.transform.scale(arrow_image, (50, 50))
+    # Place arrow at a fixed world position, e.g., left edge, vertically centered
+    x = 50 - camera_x
+    y = (config.SCREEN_HEIGHT // 2 - 25) - camera_y
+    screen.blit(arrow_image, (x, y))
+    # Draw 'Town' above the arrow
+    font = pygame.font.SysFont(None, 32)
+    text_surface = font.render('Town', True, (0, 0, 0))
+    text_rect = text_surface.get_rect(center=(x + 25, y - 20))
+    screen.blit(text_surface, text_rect)

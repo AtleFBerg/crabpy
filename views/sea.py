@@ -42,7 +42,9 @@ class SeaView(BaseView):
         gui_elements.draw_toggle_button(screen, self.toggle_button_rect, font, "Above" if not self.underwater else "Underwater")
         gui_elements.draw_current_crab_count(screen, inventory, font)
         gui_elements.draw_selected_bait(screen, self.selected_bait, font)
-        gui_elements.draw_crab_count(self.all_crabs, screen)    
+        gui_elements.draw_crab_count(self.all_crabs, screen)
+        gui_elements.draw_to_town_arrow(screen, camera_x, camera_y)
+
     
     def update_camera(self):
         return utils.update_camera(self.boat)
@@ -126,6 +128,11 @@ class SeaView(BaseView):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if self.toggle_button_rect.collidepoint(event.pos):
                     self.underwater = not self.underwater
+        # Check if boat is at the left edge
+        if self.boat.x <= 0:
+            self.boat.x = 10
+            return "town"
+        return None
 
     def handle_keys(self, keys):
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:

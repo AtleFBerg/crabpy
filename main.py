@@ -3,6 +3,8 @@ import pygame
 from entities.food import *
 import config
 from views.sea import SeaView
+from views.town import TownView
+from views.crab_vendor import CrabVendorView
 from views.start_menu import StartMenuView
 
 pygame.init()
@@ -19,13 +21,15 @@ load_food_images()
 camera_x = 0
 camera_y = 0
 
-inventory = {"crab_count": 0}
+inventory = {"crab_count": 0, "money": 0}
 running = True
 
 # Initialize views
 views = {
     "start_menu": StartMenuView(),
     "sea": SeaView(),
+    "town": TownView(),
+    "crab_vendor": CrabVendorView(),
 }
 current_view = views["start_menu"]
 
