@@ -34,7 +34,7 @@ views = {
 current_view = views["start_menu"]
 
 # Toggle button for view mode
-
+i = 0
 async def main():
     global camera_x, camera_y, inventory, running, current_view
 
