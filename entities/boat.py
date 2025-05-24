@@ -5,7 +5,7 @@ import time
 from .crab_pot import CrabPot  # Adjust import as needed
 
 class Boat:
-    def __init__(self, x, y, max_pots=5):
+    def __init__(self, x, y, max_pots=3):
         self.x = x
         self.y = y
         self.base_y = y  # for wobble

@@ -21,7 +21,7 @@ load_food_images()
 camera_x = 0
 camera_y = 0
 
-inventory = {"crab_count": 0, "money": 0}
+inventory = {"crab_count": 0, "money": 0, "reverse_periscope": False}
 running = True
 
 # Initialize views

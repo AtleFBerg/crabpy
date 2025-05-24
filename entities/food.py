@@ -54,6 +54,12 @@ class Food():
         new_food.x = new_x
         new_food.y = new_y
         return new_food
+    
+    @staticmethod
+    def remove_food(food_to_remove, food_list):
+        for food in food_to_remove:
+            if food in food_list:
+                food_list.remove(food)
    
 class Seaweed(Food):
     def __init__(self, is_bait=False):
