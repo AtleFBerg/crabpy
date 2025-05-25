@@ -23,26 +23,25 @@ class SeaView(BaseView):
         self.selected_bait = None
         utils.world_food_respawn(self.all_food)
         self.all_crabs: list[Crab] = [Crab() for _ in range(config.INITIAL_CRAB_COUNT)]
-        self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
+        # self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
         self.world_food_respawn_timer = 0
-        # Create the PiP surface once and reuse it
         self.pip_width, self.pip_height = 300, 200
         self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
 
     def update(self, screen, camera_x, camera_y, inventory, font):
-        if self.underwater:
-            self.underwater_animation.draw(screen, camera_x, camera_y)
-        else:
-            self.water_animation.update()
-            self.water_animation.draw(screen, camera_x, camera_y)
-            if inventory["reverse_periscope"]:
-                self.draw_pip(screen)
+        # if self.underwater:
+        #     self.underwater_animation.draw(screen, camera_x, camera_y)
+        # else:
+        self.water_animation.update()
+        self.water_animation.draw(screen, camera_x, camera_y)
+        if inventory["reverse_periscope"]:
+            self.draw_pip(screen)
         self.update_crabs(screen, camera_x, camera_y)
         self.draw_boat(screen, camera_x, camera_y)
         self.draw_pots(screen, camera_x, camera_y)
         self.draw_food(screen, camera_x, camera_y)
         gui_elements.draw_average_crab_food_preferences(screen, self.all_crabs, font)
-        gui_elements.draw_toggle_button(screen, self.toggle_button_rect, font, "Above" if not self.underwater else "Underwater")
+        # gui_elements.draw_toggle_button(screen, self.toggle_button_rect, font, "Above" if not self.underwater else "Underwater")
         gui_elements.draw_current_crab_count(screen, inventory, font)
         gui_elements.draw_selected_bait(screen, self.selected_bait, font)
         gui_elements.draw_crab_count(self.all_crabs, screen)
@@ -128,9 +127,9 @@ class SeaView(BaseView):
                         self.boat.raise_pot(pot_under_boat, self.all_food, crab_inventory)
                     else:
                         self.boat.drop_pot(self.selected_bait, self.all_food)
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.toggle_button_rect.collidepoint(event.pos):
-                    self.underwater = not self.underwater
+            # elif event.type == pygame.MOUSEBUTTONDOWN:
+            #     if self.toggle_button_rect.collidepoint(event.pos):
+            #         self.underwater = not self.underwater
         # Check if boat is at the left edge
         if self.boat.x <= 0:
             self.boat.x = 10
@@ -139,19 +138,19 @@ class SeaView(BaseView):
 
     def handle_keys(self, keys):
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.boat.x -= 2
+            self.boat.x -= self.boat.speed
             if not self.boat.facing_left:
                 self.boat.facing_left = True
                 self.boat.sprite = pygame.transform.flip(self.boat.sprite, True, False)
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.boat.x += 2
+            self.boat.x += self.boat.speed
             if self.boat.facing_left:
                 self.boat.facing_left = False
                 self.boat.sprite = pygame.transform.flip(self.boat.sprite, True, False)
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.boat.base_y -= 2
+            self.boat.base_y -= self.boat.speed
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.boat.base_y += 2
+            self.boat.base_y += self.boat.speed
         if keys[pygame.K_1]: self.selected_bait = Seaweed(is_bait=True)
         if keys[pygame.K_2]: self.selected_bait = Shrimp(is_bait=True)
         if keys[pygame.K_3]: self.selected_bait = Clam(is_bait=True)

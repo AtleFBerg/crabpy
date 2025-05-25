@@ -11,7 +11,7 @@ class Boat:
         self.base_y = y  # for wobble
         self.width = 48
         self.height = 32
-        self.speed = 3
+        self.speed = 2.0
         self.sprite = pygame.image.load("assets/sprites/boat.png").convert_alpha()
         self.sprite = pygame.transform.scale(self.sprite, (144, 96))
         self.facing_left = True
@@ -21,10 +21,10 @@ class Boat:
         self.wobble_offset = 0
 
     def move(self, keys):
-        if keys[pygame.K_a]: self.x -= self.speed
-        if keys[pygame.K_d]: self.x += self.speed
-        if keys[pygame.K_w]: self.y -= self.speed
-        if keys[pygame.K_s]: self.y += self.speed
+        if keys[pygame.K_a or pygame.K_RIGHT]: self.x -= self.speed
+        if keys[pygame.K_d or pygame.K_LEFT]: self.x += self.speed
+        if keys[pygame.K_w or pygame.K_UP]: self.base_y -= self.speed
+        if keys[pygame.K_s or pygame.K_DOWN]: self.base_y += self.speed
 
     def drop_pot(self, selected_bait, all_food):
         if len(self.pots) < self.max_pots:

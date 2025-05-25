@@ -6,20 +6,24 @@ from entities.boat import Boat
 
 class ShipyardView(BaseView):
     def __init__(self, boat: Boat):
-        self.boat = boat  # Store a reference to the boat if provided
+        self.boat = boat
         self.background_img = pygame.image.load('assets/background.png').convert_alpha()
         self.background_img = pygame.transform.scale(self.background_img, (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
-        self.font = pygame.font.SysFont(None, 48)
+        self.font = pygame.font.SysFont(None, 30)
         self.buttons = [
             {"label": "Upgrade Ship", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 350, 200, 50)},
             {"label": "Back to Town", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 420, 200, 50)}
         ]
         self.show_grid = False
-        # Define grid items for upgrades
+        grid_y = 200
+        grid_spacing_x = 200
+        grid_spacing_y = 100
+        grid_center = config.SCREEN_WIDTH // 2
         self.grid_items = [
-            {"label": "Upgrade Engine", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 - 200, 200, 180, 80)},
-            {"label": "Buy Crab Pot", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 + 20, 200, 180, 80)},
-            {"label": "Reverse Periscope", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 - 90, 320, 180, 80)}
+            {"label": "Upgrade Engine", "price": 10, "rect": pygame.Rect(grid_center - grid_spacing_x, grid_y, 180, 80)},
+            {"label": "Buy Crab Pot", "price": 10, "rect": pygame.Rect(grid_center + 20, grid_y, 180, 80)},
+            {"label": "Reverse Periscope", "price": 15, "rect": pygame.Rect(grid_center - 90, grid_y + grid_spacing_y, 180, 80)},
+            {"label": "Back", "price": None, "rect": pygame.Rect(grid_center - 90, grid_y + 2 * grid_spacing_y, 180, 80)}
         ]
         self.info_text = "Shipyard"
         self.speech_text = None
@@ -40,8 +44,12 @@ class ShipyardView(BaseView):
             for item in self.grid_items:
                 pygame.draw.rect(screen, (60, 180, 60), item["rect"])
                 label_surface = self.font.render(item["label"], True, (255, 255, 255))
-                label_rect = label_surface.get_rect(center=item["rect"].center)
+                label_rect = label_surface.get_rect(center=(item["rect"].centerx, item["rect"].centery - 15))
                 screen.blit(label_surface, label_rect)
+                if item["price"] is not None:
+                    price_surface = self.font.render(f"${item['price']}", True, (255, 255, 0))
+                    price_rect = price_surface.get_rect(center=(item["rect"].centerx, item["rect"].centery + 20))
+                    screen.blit(price_surface, price_rect)
         else:
             for button in self.buttons:
                 pygame.draw.rect(screen, (30, 144, 255), button["rect"])
@@ -59,8 +67,10 @@ class ShipyardView(BaseView):
                 if self.show_grid:
                     for item in self.grid_items:
                         if item["rect"].collidepoint(event.pos):
+                            if item["label"] == "Back":
+                                self.show_grid = False
+                                return None
                             self.buy_item(item["label"], inventory)
-                    self.show_grid = False
                 else:
                     for button in self.buttons:
                         if button["rect"].collidepoint(event.pos):
@@ -82,7 +92,7 @@ class ShipyardView(BaseView):
         if item_name == "Upgrade Engine":
             if inventory["money"] >= 10:
                 inventory["money"] -= 10
-                self.boat.speed += 1  # Assuming boat has a speed attribute
+                self.boat.speed += 0.5 
                 self.speech_text = "Engine upgraded!"
             else:
                 self.speech_text = "Not enough money for engine upgrade."
