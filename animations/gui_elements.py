@@ -39,13 +39,15 @@ def draw_crab_count(all_crabs, screen):
     screen.blit(text_surface, (10, 10))  # Top-left corner
 
 def draw_to_town_arrow(screen, camera_x, camera_y):
-    arrow_image = pygame.image.load('assets/arrow.png').convert_alpha()
-    arrow_image = pygame.transform.scale(arrow_image, (50, 50))
-    # Place arrow at a fixed world position, e.g., left edge, vertically centered
+    if not hasattr(draw_to_town_arrow, "arrow_image"):
+        arrow_image = pygame.image.load('assets/arrow.png').convert_alpha()
+        arrow_image = pygame.transform.scale(arrow_image, (50, 50))
+        draw_to_town_arrow.arrow_image = arrow_image
+    else:
+        arrow_image = draw_to_town_arrow.arrow_image
     x = 50 - camera_x
     y = (config.SCREEN_HEIGHT // 2 - 25) - camera_y
     screen.blit(arrow_image, (x, y))
-    # Draw 'Town' above the arrow
     font = pygame.font.SysFont(None, 32)
     text_surface = font.render('Town', True, (0, 0, 0))
     text_rect = text_surface.get_rect(center=(x + 25, y - 20))
