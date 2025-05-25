@@ -6,7 +6,7 @@ import config
 
 class CrabVendorView(BaseView):
     def __init__(self):
-        self.background_img = pygame.image.load('assets/crab_vendor.png').convert()
+        self.background_img = pygame.image.load('assets/crab_vendor.png').convert_alpha()
         self.background_img = pygame.transform.scale(self.background_img, (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
         self.font = pygame.font.SysFont(None, 48)
         self.buttons = [

@@ -13,9 +13,10 @@ from views.base_view import BaseView
 
 class SeaView(BaseView):
     
-    def __init__(self):
+    def __init__(self, boat: Boat):
         super().__init__()
         self.underwater = False
+        self.boat = boat
         self.water_animation = WaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
         self.underwater_animation = UnderwaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
         self.all_food: list[Food] = []
@@ -23,8 +24,10 @@ class SeaView(BaseView):
         utils.world_food_respawn(self.all_food)
         self.all_crabs: list[Crab] = [Crab() for _ in range(config.INITIAL_CRAB_COUNT)]
         self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
-        self.boat = Boat(100, 100)
         self.world_food_respawn_timer = 0
+        # Create the PiP surface once and reuse it
+        self.pip_width, self.pip_height = 300, 200
+        self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
 
     def update(self, screen, camera_x, camera_y, inventory, font):
         if self.underwater:
@@ -32,7 +35,8 @@ class SeaView(BaseView):
         else:
             self.water_animation.update()
             self.water_animation.draw(screen, camera_x, camera_y)
-            self.draw_pip(screen)
+            if inventory["reverse_periscope"]:
+                self.draw_pip(screen)
         self.update_crabs(screen, camera_x, camera_y)
         self.draw_boat(screen, camera_x, camera_y)
         self.draw_pots(screen, camera_x, camera_y)
@@ -156,22 +160,22 @@ class SeaView(BaseView):
         if keys[pygame.K_6]: self.selected_bait = Starfish(is_bait=True)
 
     def draw_pip(self, screen):
-        pip_width, pip_height = 300, 200
-        pip_surface = pygame.Surface((pip_width, pip_height))
-        pip_camera_x = self.boat.x - pip_width // 2
-        pip_camera_y = self.boat.base_y - pip_height // 2
-        self.underwater_animation.draw(pip_surface, pip_camera_x, pip_camera_y)
+        # Clear the PiP surface each frame
+        self.pip_surface.fill((0, 0, 0, 0))
+        pip_camera_x = self.boat.x - self.pip_width // 2
+        pip_camera_y = self.boat.base_y - self.pip_height // 2
+        self.underwater_animation.draw(self.pip_surface, pip_camera_x, pip_camera_y)
         for food in self.all_food:
             pip_x = food.x - pip_camera_x
             pip_y = food.y - pip_camera_y
-            pip_surface.blit(food.sprite, (pip_x, pip_y))
+            self.pip_surface.blit(food.sprite, (pip_x, pip_y))
         for crab in self.all_crabs:
             pip_x = crab.x - pip_camera_x
             pip_y = crab.y - pip_camera_y
-            pip_surface.blit(crab.sprite, (pip_x, pip_y))
+            self.pip_surface.blit(crab.sprite, (pip_x, pip_y))
         if self.boat.pots:
             for crab_pot in self.boat.pots:
                 pip_x = crab_pot.x - pip_camera_x
                 pip_y = crab_pot.y - pip_camera_y
-                pip_surface.blit(crab_pot.underwater_pot_sprite, (pip_x, pip_y))
-        screen.blit(pip_surface, (screen.get_width() - pip_width - 20, screen.get_height() - pip_height - 20))
+                self.pip_surface.blit(crab_pot.underwater_pot_sprite, (pip_x, pip_y))
+        screen.blit(self.pip_surface, (screen.get_width() - self.pip_width - 20, screen.get_height() - self.pip_height - 20))

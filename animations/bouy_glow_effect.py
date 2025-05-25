@@ -13,7 +13,7 @@ def bouy_glow_effect(surface, x, y, width, height, alpha=255, blink_direction=-5
     :param blink_direction: The direction to change the alpha value (-1 for fade out, 1 for fade in).
     """
     # Create a new surface with an alpha channel
-    glow_surface = pygame.Surface((width, height), pygame.SRCALPHA)
+    glow_surface = pygame.Surface((width, height), pygame.SRCALPHA).convert_alpha()
     
     # Draw a circle with a gradient effect
     for i in range(0, 256, 5):

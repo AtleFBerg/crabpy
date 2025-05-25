@@ -37,6 +37,8 @@ class TownView(BaseView):
                             return "sea"
                         elif button["label"] == "Crab vendor":
                             return "crab_vendor"
+                        elif button["label"] == "Shipyard":
+                            return "shipyard"
         return None
 
     def handle_keys(self, keys, *args, **kwargs):

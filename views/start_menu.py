@@ -45,4 +45,4 @@ class StartMenuView(BaseView):
 
     @staticmethod
     def load_background():
-        return pygame.image.load('assets/background.png')
+        return pygame.image.load('assets/background.png').convert_alpha()

@@ -1,9 +1,11 @@
 import asyncio
 import pygame
+from entities.boat import Boat
 from entities.food import *
 import config
 from views.sea import SeaView
 from views.town import TownView
+from views.shipyard import ShipyardView
 from views.crab_vendor import CrabVendorView
 from views.start_menu import StartMenuView
 
@@ -20,16 +22,17 @@ load_food_images()
 # World variables
 camera_x = 0
 camera_y = 0
-
+boat = Boat(100, 100)  
 inventory = {"crab_count": 0, "money": 0, "reverse_periscope": False}
 running = True
 
 # Initialize views
 views = {
     "start_menu": StartMenuView(),
-    "sea": SeaView(),
+    "sea": SeaView(boat),
     "town": TownView(),
     "crab_vendor": CrabVendorView(),
+    "shipyard": ShipyardView(boat)
 }
 current_view = views["start_menu"]
 
