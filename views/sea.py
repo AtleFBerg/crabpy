@@ -25,7 +25,7 @@ class SeaView(BaseView):
         self.all_crabs: list[Crab] = [Crab() for _ in range(config.INITIAL_CRAB_COUNT)]
         # self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
         self.world_food_respawn_timer = 0
-        self.pip_width, self.pip_height = 300, 200
+        self.pip_width, self.pip_height = 125, 75
         self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
 
     def update(self, screen, camera_x, camera_y, inventory, font):
@@ -161,8 +161,10 @@ class SeaView(BaseView):
     def draw_pip(self, screen):
         # Clear the PiP surface each frame
         self.pip_surface.fill((0, 0, 0, 0))
-        pip_camera_x = self.boat.x - self.pip_width // 2
-        pip_camera_y = self.boat.base_y - self.pip_height // 2
+        boat_center_x = self.boat.x + self.boat.sprite.get_width() // 2
+        boat_center_y = self.boat.base_y + self.boat.sprite.get_height() // 2
+        pip_camera_x = boat_center_x - self.pip_width // 2
+        pip_camera_y = boat_center_y - self.pip_height // 2
         self.underwater_animation.draw(self.pip_surface, pip_camera_x, pip_camera_y)
         for food in self.all_food:
             pip_x = food.x - pip_camera_x
@@ -177,4 +179,10 @@ class SeaView(BaseView):
                 pip_x = crab_pot.x - pip_camera_x
                 pip_y = crab_pot.y - pip_camera_y
                 self.pip_surface.blit(crab_pot.underwater_pot_sprite, (pip_x, pip_y))
-        screen.blit(self.pip_surface, (screen.get_width() - self.pip_width - 20, screen.get_height() - self.pip_height - 20))
+        # Create a circular mask and blit the PiP as a round view
+        mask = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA)
+        pygame.draw.ellipse(mask, (255, 255, 255, 255), (0, 0, self.pip_width, self.pip_height))
+        round_pip = self.pip_surface.copy()
+        round_pip.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        screen.blit(round_pip, (screen.get_width() - self.pip_width - 20, screen.get_height() - self.pip_height - 20))
+
