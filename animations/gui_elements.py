@@ -16,21 +16,29 @@ def draw_toggle_button(screen, toggle_button_rect, font, view_mode):
     text = font.render(f"View: {view_mode}", True, (255, 255, 255))
     screen.blit(text, (toggle_button_rect.x + 10, toggle_button_rect.y + 10))
 
-def draw_current_crab_count(screen, inventory, font):
+def draw_inventory(screen, inventory, font):
     y = 50
     for key, value in inventory.items():
         text = f"{key.replace('_', ' ').capitalize()}: {value}"
         text_surface = font.render(text, True, (0, 0, 0))
-        screen.blit(text_surface, (config.SCREEN_WIDTH - 200, y))
+        screen.blit(text_surface, (config.SCREEN_WIDTH - 250, y))
         y += 30
 
 def draw_selected_bait(screen, selected_bait, font):
     if selected_bait:
         bait_text = f"Bait: {selected_bait.__class__.__name__}"
+        bait_surface = font.render(bait_text, True, (0, 0, 0))
+        x = config.SCREEN_WIDTH - 250
+        y = 10
+        screen.blit(bait_surface, (x, y))
+        if hasattr(selected_bait, "sprite"):
+            sprite = selected_bait.sprite
+            sprite_y = y + (bait_surface.get_height() - sprite.get_height()) // 2
+            screen.blit(sprite, (x + bait_surface.get_width() + 10, sprite_y))
     else:
         bait_text = "Bait: None"
-    bait_surface = font.render(bait_text, True, (0, 0, 0))  
-    screen.blit(bait_surface, (config.SCREEN_WIDTH - 200, 10))
+        bait_surface = font.render(bait_text, True, (0, 0, 0))
+        screen.blit(bait_surface, (config.SCREEN_WIDTH - 250, 10))
 
 def draw_crab_count(all_crabs, screen):
     m, f = Crab.count_sexes(all_crabs)

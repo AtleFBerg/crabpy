@@ -42,7 +42,7 @@ class SeaView(BaseView):
         self.draw_food(screen, camera_x, camera_y)
         gui_elements.draw_average_crab_food_preferences(screen, self.all_crabs, font)
         # gui_elements.draw_toggle_button(screen, self.toggle_button_rect, font, "Above" if not self.underwater else "Underwater")
-        gui_elements.draw_current_crab_count(screen, inventory, font)
+        gui_elements.draw_inventory(screen, inventory, font)
         gui_elements.draw_selected_bait(screen, self.selected_bait, font)
         gui_elements.draw_crab_count(self.all_crabs, screen)
         gui_elements.draw_to_town_arrow(screen, camera_x, camera_y)

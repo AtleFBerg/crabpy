@@ -35,7 +35,7 @@ class CrabVendorView(BaseView):
             label_surface = self.font.render(button["label"], True, (255, 255, 255))
             label_rect = label_surface.get_rect(center=button["rect"].center)
             screen.blit(label_surface, label_rect)
-        gui_elements.draw_current_crab_count(screen, inventory, font)
+        gui_elements.draw_inventory(screen, inventory, font)
 
     def handle_events(self, events, inventory):
         for event in events:
