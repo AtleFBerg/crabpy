@@ -27,6 +27,9 @@ class SeaView(BaseView):
         self.world_food_respawn_timer = 0
         self.pip_width, self.pip_height = 125, 75
         self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
+        self.periscope_img = pygame.image.load("assets/sprites/periscope.png").convert_alpha()
+        # self.periscope_img = pygame.transform.scale(self.periscope_img, (144, 96))
+        self.periscope_img = pygame.transform.scale(self.periscope_img, (self.pip_width + 40, self.pip_height + 40))
 
     def update(self, screen, camera_x, camera_y, inventory, font):
         # if self.underwater:
@@ -184,5 +187,7 @@ class SeaView(BaseView):
         pygame.draw.ellipse(mask, (255, 255, 255, 255), (0, 0, self.pip_width, self.pip_height))
         round_pip = self.pip_surface.copy()
         round_pip.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        pip_x = screen.get_width() - self.pip_width - 20
+        pip_y = screen.get_height() - self.pip_height - 20
         screen.blit(round_pip, (screen.get_width() - self.pip_width - 20, screen.get_height() - self.pip_height - 20))
-
+        screen.blit(self.periscope_img, (pip_x - 20 , pip_y - 20))
