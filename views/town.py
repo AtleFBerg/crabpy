@@ -84,7 +84,7 @@ class TownView(BaseView):
     
     def should_draw_multi_tile(self, symbol, map_x, map_y):
         """Only draw if this tile is the top-left of a multi-tile group."""
-        break_symbols = {'-', '_'}
+        break_symbols = {'_'}
         left_same = (
             map_x > 0 and
             self.town_map[map_y][map_x - 1] == symbol and
@@ -129,6 +129,8 @@ class TownView(BaseView):
                 y_offset = y - y_overlap if y_overlap else y
                 x_offset = x - x_overlap if x_overlap else x
                 screen.blit(tileset, (x_offset, y_offset), rect)
+            else:
+                return
         elif rect_info:
             if len(rect_info) == 6:
                 rect = pygame.Rect(*rect_info[:4])
