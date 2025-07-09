@@ -21,7 +21,7 @@ class WaterAnimation:
         if self.scroll_y >= self.water_tile_height:
             self.scroll_y = 0
 
-    def draw(self, surface, camera_x, camera_y):
+    def draw_ocean(self, surface, camera_x, camera_y):
         start_x = -int(camera_x) % self.water_tile_width - self.water_tile_width
         start_y = -int(camera_y) % self.water_tile_height - self.water_tile_height
         # Draw the water tiles on the surface
@@ -29,3 +29,10 @@ class WaterAnimation:
             for y in range(start_y, self.screen_height + self.water_tile_height , self.water_tile_height):
                 surface.blit(self.water_tile, (x - int(self.scroll_x), y - int(self.scroll_y)))
 
+    def draw_river(self, surface, camera_x, camera_y):
+        start_x = -int(camera_x) % self.water_tile_width - self.water_tile_width
+        # Only draw water in the band: y is always within the water band height
+        for x in range(start_x, self.screen_width + self.water_tile_width, self.water_tile_width):
+            for y in range(0, self.screen_height, self.water_tile_height):
+                # Draw at (x - scroll_x, camera_y + y)
+                surface.blit(self.water_tile, (x - int(self.scroll_x), camera_y + y))

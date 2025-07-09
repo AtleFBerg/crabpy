@@ -1,4 +1,6 @@
 import pygame
+
+from animations.water_animation import WaterAnimation
 from .base_view import BaseView
 import config
 import os
@@ -31,8 +33,21 @@ class TownView(BaseView):
         self.anim_start = None
         self.anim_from = None
         self.anim_to = None
-        self.anim_duration = 8  # frames for smooth transition
+        self.anim_duration = 4  # frames for smooth transition
         self.anim_progress = 0
+        self.player_sprite = pygame.image.load("assets/sprites/player_sprite.png").convert_alpha()
+        self.player_sprite = pygame.transform.scale(self.player_sprite, (self.TILE_SIZE, self.TILE_SIZE))
+        self.grass_tile =  pygame.image.load("assets/sprites/grass_tile.png").convert_alpha()
+        self.grass_tile = pygame.transform.scale(self.grass_tile, (self.TILE_SIZE, self.TILE_SIZE))
+        self.water_tile = pygame.image.load("assets/sprites/water_tile.png").convert_alpha()
+        self.water_tile = pygame.transform.scale(self.water_tile, (self.TILE_SIZE, self.TILE_SIZE))
+        self.water_anim_rows = 7  # Number of rows for water animation at the bottom
+        self.water_animation = WaterAnimation(
+            screen_width=config.SCREEN_WIDTH,
+            screen_height=self.water_anim_rows * self.TILE_SIZE
+        )
+        self.cobblestone_tile = pygame.image.load("assets/sprites/cobblestone_tile.jpg").convert()
+        self.cobblestone_tile = pygame.transform.scale(self.cobblestone_tile, (self.TILE_SIZE, self.TILE_SIZE))
         # Initialize TILE_RECTS here so we can use self.tile_rect
         self.TILE_RECTS = {
             # Foundation
@@ -126,12 +141,18 @@ class TownView(BaseView):
             y_offset = y - y_overlap if y_overlap else y
             x_offset = x - x_overlap if x_overlap else x
             screen.blit(tileset, (x_offset, y_offset), rect)
+        elif symbol == '.':
+            screen.blit(self.cobblestone_tile, (x, y))
         else:
             color = self.COLORS.get(symbol, (180, 180, 180))
             pygame.draw.rect(screen, color, (x, y, self.TILE_SIZE, self.TILE_SIZE))
             
     def update(self, screen, camera_x, camera_y, *args, **kwargs):
-        screen.fill((220, 210, 180))
+        self.fill_with_grass(screen)
+        self.water_animation.update()
+        water_y = screen.get_height() - self.water_anim_rows * self.TILE_SIZE
+        self.water_animation.draw_river(screen, 0, water_y)
+
         # Draw rows from bottom to top for correct overlap
         for y in reversed(range(len(self.town_map))):
             row = self.town_map[y]
@@ -141,16 +162,14 @@ class TownView(BaseView):
             t = self.anim_progress / self.anim_duration
             px = (1-t) * self.anim_from[0] + t * self.anim_to[0]
             py = (1-t) * self.anim_from[1] + t * self.anim_to[1]
-            prect = pygame.Rect(px * self.TILE_SIZE, py * self.TILE_SIZE, self.TILE_SIZE, self.TILE_SIZE)
-            pygame.draw.rect(screen, (0, 0, 0), prect)
+            screen.blit(self.player_sprite, (px * self.TILE_SIZE, py * self.TILE_SIZE))
             self.anim_progress += 1
             if self.anim_progress >= self.anim_duration:
                 self.animating = False
                 self.player_pos = list(self.anim_to)
         else:
             px, py = self.player_pos
-            prect = pygame.Rect(px * self.TILE_SIZE, py * self.TILE_SIZE, self.TILE_SIZE, self.TILE_SIZE)
-            pygame.draw.rect(screen, (0, 0, 0), prect)
+            screen.blit(self.player_sprite, (px * self.TILE_SIZE, py * self.TILE_SIZE))
         # Info
         text_surface = self.font.render(self.info_text, True, (60, 40, 20))
         screen.blit(text_surface, (10, 10))
@@ -211,7 +230,7 @@ class TownView(BaseView):
 
     def is_walkable(self, x, y):
         if 0 <= y < len(self.town_map) and 0 <= x < len(self.town_map[0]):
-            return self.town_map[y][x] not in ('#', 'R')
+            return self.town_map[y][x] in ('.', '-', 'E', 'P', 'S', 'C')
         return False
 
     def load_map(self):
@@ -223,7 +242,15 @@ class TownView(BaseView):
         return [line.strip().split() for line in lines if line.strip()]
 
     def find_spawn(self):
-        """Find the first walkable tile to spawn the player."""
+        """Find the first walkable tile above an 'E' entrance to spawn the player."""
+        for y, row in enumerate(self.town_map):
+            for x, cell in enumerate(row):
+                if cell == 'E' and y > 0:
+                    # Check if the tile above is walkable
+                    above = self.town_map[y - 1][x]
+                    if above != '#' and above != 'R':
+                        return [x, y - 1]
+        # Fallback: first walkable tile
         for y, row in enumerate(self.town_map):
             for x, cell in enumerate(row):
                 if cell == '.' or cell == '@':
@@ -243,3 +270,9 @@ class TownView(BaseView):
                 self._tileset = pygame.Surface((self.TILE_SIZE*16, self.TILE_SIZE*16), pygame.SRCALPHA)
                 self._tileset.fill((255, 0, 255, 128))
         return self._tileset
+    
+    def fill_with_grass(self, screen):
+        tile_w, tile_h = self.grass_tile.get_width(), self.grass_tile.get_height()
+        for y in range(0, screen.get_height(), tile_h):
+            for x in range(0, screen.get_width(), tile_w):
+                screen.blit(self.grass_tile, (x, y))

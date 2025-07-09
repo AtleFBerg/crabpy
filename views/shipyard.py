@@ -7,7 +7,7 @@ from entities.boat import Boat
 class ShipyardView(BaseView):
     def __init__(self, boat: Boat):
         self.boat = boat
-        self.background_img = pygame.image.load('assets/background.png').convert_alpha()
+        self.background_img = pygame.image.load('assets/shipyard.png').convert_alpha()
         self.background_img = pygame.transform.scale(self.background_img, (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
         self.font = pygame.font.SysFont(None, 30)
         self.buttons = [

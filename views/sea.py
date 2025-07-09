@@ -36,7 +36,7 @@ class SeaView(BaseView):
         #     self.underwater_animation.draw(screen, camera_x, camera_y)
         # else:
         self.water_animation.update()
-        self.water_animation.draw(screen, camera_x, camera_y)
+        self.water_animation.draw_ocean(screen, camera_x, camera_y)
         if inventory["reverse_periscope"]:
             self.draw_pip(screen)
         self.update_crabs(screen, camera_x, camera_y)
