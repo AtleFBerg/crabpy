@@ -1,4 +1,5 @@
 import pygame
+import random
 
 from animations import gui_elements
 from .base_view import BaseView
@@ -13,10 +14,27 @@ class CrabVendorView(BaseView):
             {"label": "Sell Crabs", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 350, 200, 50)},
             {"label": "Back to Town", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 420, 200, 50)}
         ]
-        self.is_speaking = False
         self.speech_bubble = pygame.image.load('assets/speech_bubble.png').convert_alpha()
         self.speech_bubble = pygame.transform.scale(self.speech_bubble, (500, 300))
         self.speech_bubble = pygame.transform.flip(self.speech_bubble, True, False)
+
+        self.greetings = [
+            "Oh great, it’s you again.\nLet me guess — \nmore crabs. Wonderful.",
+            "You smell like the docks.\nMust mean you’ve got crabs to sell.",
+            "Back already?\nYou trying to bury me \nalive in crabs or what?",
+            "If I see one more crab today,\n I’m moving inland.\nNow, let’s see what you’ve got.",
+            "Ah, my favorite customer!\nSaid no one ever. \nShow me the crabs.",
+            "You bring crabs,\n I bring disappointment.\nLet’s make this quick.",
+            "Oh, fantastic.\nJust when I thought today\ncouldn’t get smellier.",
+            "You again?\nIf you keep this up, I’ll start\n charging you rent for the counter.",
+            "Crabs, huh?\nYou sure you don’t have\n anything nice,\n like gold? Or silence?",
+            "Welcome back, crab dealer.\nYou’re single-handedly \nkeeping my misery alive."
+        ]
+        self.show_greeting()
+    
+    def show_greeting(self):
+        self.is_speaking = True
+        self.speech_text = random.choice(self.greetings)
 
     def update(self, screen, camera_x, camera_y, inventory, font, *args, **kwargs):
         screen.blit(self.background_img, (0, 0))

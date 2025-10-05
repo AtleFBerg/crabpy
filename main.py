@@ -52,6 +52,8 @@ async def main():
         new_view_key = current_view.handle_events(events, inventory)
         if new_view_key and new_view_key in views:
             current_view = views[new_view_key]
+            if new_view_key == "crab_vendor":
+                current_view.show_greeting()
 
         # Movement and input (only if not in menu)
         if hasattr(current_view, 'handle_keys'):
