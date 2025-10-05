@@ -23,7 +23,9 @@ class SeaView(BaseView):
         self.selected_bait = None
         utils.world_food_respawn(self.all_food)
         self.all_crabs: list[Crab] = [Crab() for _ in range(config.INITIAL_CRAB_COUNT)]
-        # self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
+        self.cheat_code = ""
+        self.cheat_active = False
+        self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
         self.world_food_respawn_timer = 0
         self.pip_width, self.pip_height = 125, 75
         self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
@@ -32,11 +34,11 @@ class SeaView(BaseView):
         self.periscope_img = pygame.transform.scale(self.periscope_img, (self.pip_width + 40, self.pip_height + 40))
 
     def update(self, screen, camera_x, camera_y, inventory, font):
-        # if self.underwater:
-        #     self.underwater_animation.draw(screen, camera_x, camera_y)
-        # else:
-        self.water_animation.update()
-        self.water_animation.draw_ocean(screen, camera_x, camera_y)
+        if self.underwater:
+            self.underwater_animation.draw(screen, camera_x, camera_y)
+        else:
+            self.water_animation.update()
+            self.water_animation.draw_ocean(screen, camera_x, camera_y)
         if inventory["reverse_periscope"]:
             self.draw_pip(screen)
         self.update_crabs(screen, camera_x, camera_y)
@@ -44,7 +46,8 @@ class SeaView(BaseView):
         self.draw_pots(screen, camera_x, camera_y)
         self.draw_food(screen, camera_x, camera_y)
         gui_elements.draw_average_crab_food_preferences(screen, self.all_crabs, font)
-        # gui_elements.draw_toggle_button(screen, self.toggle_button_rect, font, "Above" if not self.underwater else "Underwater")
+        if self.cheat_active:
+            gui_elements.draw_toggle_button(screen, self.toggle_button_rect, font, "Above" if not self.underwater else "Underwater")
         gui_elements.draw_inventory(screen, inventory, font)
         gui_elements.draw_selected_bait(screen, self.selected_bait, font)
         gui_elements.draw_crab_count(self.all_crabs, screen)
@@ -110,14 +113,26 @@ class SeaView(BaseView):
                 highlight = (crab_pot is pot_under_boat)
                 crab_pot.draw(screen, camera_x, camera_y, self.underwater, highlight=highlight)
                 crab_pot.check_for_crabs(self.all_crabs, self.all_food)
-
+    
     def handle_events(self, events, crab_inventory):
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             if event.type == pygame.KEYDOWN:
+                # Cheat code detection
+                if event.unicode.lower() in 'crab':
+                    self.cheat_code += event.unicode.lower()
+                    if len(self.cheat_code) > 4:
+                        self.cheat_code = self.cheat_code[-4:]  # Keep only last 4 chars
+                    if self.cheat_code == "crab":
+                        self.cheat_active = not self.cheat_active  # Toggle cheat
+                        self.cheat_code = ""  # Reset after activation
+                else:
+                    self.cheat_code = ""  # Reset if wrong key pressed
+                
                 if event.key == pygame.K_SPACE:
+                    # ...existing space key code...
                     if not self.selected_bait:
                         continue
                     MARGIN = 100
@@ -130,10 +145,9 @@ class SeaView(BaseView):
                         self.boat.raise_pot(pot_under_boat, self.all_food, crab_inventory)
                     else:
                         self.boat.drop_pot(self.selected_bait, self.all_food)
-            # elif event.type == pygame.MOUSEBUTTONDOWN:
-            #     if self.toggle_button_rect.collidepoint(event.pos):
-            #         self.underwater = not self.underwater
-        # Check if boat is at the left edge
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.cheat_active and self.toggle_button_rect.collidepoint(event.pos):
+                    self.underwater = not self.underwater
         if self.boat.x <= 0:
             self.boat.x = 10
             return "town"
