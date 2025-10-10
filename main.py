@@ -7,6 +7,7 @@ from views.sea import SeaView
 from views.town import TownView
 from views.shipyard import ShipyardView
 from views.crab_vendor import CrabVendorView
+from views.pub import PubView
 from views.start_menu import StartMenuView
 
 pygame.init()
@@ -32,7 +33,8 @@ views = {
     "sea": SeaView(boat),
     "town": TownView(),
     "crab_vendor": CrabVendorView(),
-    "shipyard": ShipyardView(boat)
+    "shipyard": ShipyardView(boat),
+    "pub": PubView()
 }
 current_view = views["start_menu"]
 
@@ -53,6 +55,8 @@ async def main():
         if new_view_key and new_view_key in views:
             current_view = views[new_view_key]
             if new_view_key == "crab_vendor":
+                current_view.show_greeting()
+            elif new_view_key == "pub":
                 current_view.show_greeting()
 
         # Movement and input (only if not in menu)
