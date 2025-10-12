@@ -72,7 +72,7 @@ class TownView(BaseView):
             'E': self.tile_rect(11, 12.5, 2, 1),
             'C': self.tile_rect(13.5, 12.5, 2, 1),
             'S': self.tile_rect(13.5, 12.5, 2, 1),
-            'P': self.tile_rect(11, 12.5, 2, 1),
+            'P': self.tile_rect(13.5, 12.5, 2, 1),
             # Rooftop (just a few samples for demo)
             'R': (*self.tile_rect(0, 0, 4.5, 5), 16, -20),
             'r': (*self.tile_rect(1.5, 0, 2, 5), 16, -20),

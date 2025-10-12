@@ -2,6 +2,7 @@ from typing import List
 import pygame
 import math
 import time
+import random
 from .crab_pot import CrabPot  # Adjust import as needed
 
 class Boat:
@@ -19,6 +20,8 @@ class Boat:
         self.max_pots = max_pots
         self.wobble_timer = 0
         self.wobble_offset = 0
+        self.is_drunk = False
+        self.drunk_timer = 0  # Timer in frames (30 fps = 1800 frames per minute)
 
     def move(self, keys):
         if keys[pygame.K_a or pygame.K_RIGHT]: self.x -= self.speed
@@ -45,6 +48,17 @@ class Boat:
         # Wobble up/down using sine wave
         self.wobble_timer += 0.05
         self.wobble_offset = math.sin(pygame.time.get_ticks() * 0.005) * 2
+        
+        # Update drunk timer
+        if self.drunk_timer > 0:
+            self.drunk_timer -= 1
+            self.is_drunk = True
+        else:
+            self.is_drunk = False
+    
+    def drink_beer(self):
+        self.drunk_timer += 900
+        self.is_drunk = True
 
     def draw(self, screen, camera_x, camera_y):
         screen.blit(self.sprite, (self.x - camera_x, self.base_y - camera_y + self.wobble_offset, ))

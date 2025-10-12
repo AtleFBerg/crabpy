@@ -6,7 +6,8 @@ from .base_view import BaseView
 import config
 
 class PubView(BaseView):
-    def __init__(self):
+    def __init__(self, boat=None):
+        self.boat = boat
         self.background_img = pygame.image.load('assets/pub.png').convert_alpha()
         self.background_img = pygame.transform.scale(self.background_img, (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
         self.font = pygame.font.SysFont(None, 48)
@@ -19,14 +20,17 @@ class PubView(BaseView):
         self.speech_bubble = pygame.transform.flip(self.speech_bubble, True, False)
 
         self.greetings = [
-            "Welcome to the pub!\nCare for a cold one?",
-            "Ahoy there, sailor!\nWhat'll it be?",
-            "Good to see you!\nThirsty after all that\ncrab catching?",
-            "Pull up a stool!\nBeer's fresh today.",
-            "Welcome, friend!\nA beer will fix\nwhatever ails you.",
-            "Hey there!\nLooking to wet your whistle?",
-            "Come in, come in!\nThe beer's cold and\nthe stories are tall.",
-            "Ahoy!\nNothing like a good brew\nafter a day at sea."
+            "Welcome back!\nNothing says 'healthy coping'\nlike day-drinking with\na stranger, right?",
+            "Ahoy there!\nAnother successful day of\navoiding your problems at sea?",
+            "Good to see a familiar face!\nWell, familiar in the sense that\nI see you here every day.",
+            "Pull up a stool!\nThe beer's cold,\nmy marriage is colder.",
+            "Welcome, friend!\nBeer won't solve your problems,\nbut neither will\nsobriety, so...",
+            "Hey there!\nYou know what they say:\n'It's 5 o'clock somewhere,\nand it's always somewhere here.'",
+            "Come in, come in!\nThe beer's cold,\nthe atmosphere is depressing,\nand I wouldn't have it\nany other way.",
+            "Ahoy!\nNothing like a good brew\nto remind you that tomorrow\nis another day to survive.",
+            "Back again?\nI admire your dedication\nto slowly pickling your liver.",
+            "Welcome!\nThey say money can't buy\nhappiness, but it can buy beer,\nwhich is pretty much\nthe same thing.",
+            "Welcome!\nThey say life is just\na detour, to death.\nMight aswell have a beer."
         ]
         self.show_greeting()
     
@@ -78,6 +82,9 @@ class PubView(BaseView):
         if inventory.get("money", 0) >= beer_price:
             inventory["money"] -= beer_price
             inventory["beer_count"] = inventory.get("beer_count", 0) + 1
-            self.speech_text = "Here's your beer!\nEnjoy, sailor!"
+            # Make the boat drunk if boat reference exists
+            if self.boat:
+                self.boat.drink_beer()
+            self.speech_text = "Here's your beer!\nDrink responsibly...\nJust kidding, I don't care."
         else:
-            self.speech_text = "Sorry, friend.\nYou don't have enough\nschmeckles for that."
+            self.speech_text = "Sorry, friend.\nYou don't have enough schmeckles.\nProbably for the best, honestly."

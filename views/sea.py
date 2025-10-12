@@ -1,5 +1,6 @@
 from collections import defaultdict
 import pygame
+import random
 from animations import gui_elements
 from animations.underwater_animation import UnderwaterAnimation
 from animations.water_animation import WaterAnimation
@@ -32,8 +33,21 @@ class SeaView(BaseView):
         self.periscope_img = pygame.image.load("assets/sprites/periscope.png").convert_alpha()
         # self.periscope_img = pygame.transform.scale(self.periscope_img, (144, 96))
         self.periscope_img = pygame.transform.scale(self.periscope_img, (self.pip_width + 40, self.pip_height + 40))
+        
+        self.drunk_remap_timer = 0
+        self.drunk_remap_duration = 90  # Remap every 3 seconds (at 30 fps)
+        self.current_control_map = {'left': 'left', 'right': 'right', 'up': 'up', 'down': 'down'}
 
     def update(self, screen, camera_x, camera_y, inventory, font):
+        if self.boat.is_drunk:
+            self.drunk_remap_timer += 1
+            if self.drunk_remap_timer >= self.drunk_remap_duration:
+                self.randomize_drunk_controls()
+                self.drunk_remap_timer = 0
+        else:
+            self.current_control_map = {'left': 'left', 'right': 'right', 'up': 'up', 'down': 'down'}
+            self.drunk_remap_timer = 0
+        
         if self.underwater:
             self.underwater_animation.draw(screen, camera_x, camera_y)
         else:
@@ -52,10 +66,25 @@ class SeaView(BaseView):
         gui_elements.draw_selected_bait(screen, self.selected_bait, font)
         gui_elements.draw_crab_count(self.all_crabs, screen)
         gui_elements.draw_to_town_arrow(screen, camera_x, camera_y)
+        
+        if self.boat.is_drunk:
+            drunk_text = font.render(f"Drunk! {self.boat.drunk_timer // 30}s", True, (255, 100, 100))
+            screen.blit(drunk_text, (config.SCREEN_WIDTH // 2 - 100, 10))
 
     
     def update_camera(self):
         return utils.update_camera(self.boat)
+    
+    def randomize_drunk_controls(self):
+        directions = ['left', 'right', 'up', 'down']
+        shuffled = directions.copy()
+        random.shuffle(shuffled)
+        self.current_control_map = {
+            'left': shuffled[0],
+            'right': shuffled[1],
+            'up': shuffled[2],
+            'down': shuffled[3]
+        }
 
     def draw(self, screen, camera_x, camera_y):
         # Additional drawing logic if needed
@@ -154,20 +183,69 @@ class SeaView(BaseView):
         return None
 
     def handle_keys(self, keys):
+        drunk_drift_x = 0
+        drunk_drift_y = 0
+        
+        if self.boat.is_drunk:
+            drunk_drift_x = random.uniform(-0.5, 0.5)
+            drunk_drift_y = random.uniform(-0.5, 0.5)
+        
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.boat.x -= self.boat.speed
+            action = self.current_control_map['left']
+            if action == 'left':
+                self.boat.x -= self.boat.speed
+            elif action == 'right':
+                self.boat.x += self.boat.speed
+            elif action == 'up':
+                self.boat.base_y -= self.boat.speed
+            elif action == 'down':
+                self.boat.base_y += self.boat.speed
+            
             if not self.boat.facing_left:
                 self.boat.facing_left = True
                 self.boat.sprite = pygame.transform.flip(self.boat.sprite, True, False)
+        
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.boat.x += self.boat.speed
+            action = self.current_control_map['right']
+            if action == 'left':
+                self.boat.x -= self.boat.speed
+            elif action == 'right':
+                self.boat.x += self.boat.speed
+            elif action == 'up':
+                self.boat.base_y -= self.boat.speed
+            elif action == 'down':
+                self.boat.base_y += self.boat.speed
+            
             if self.boat.facing_left:
                 self.boat.facing_left = False
                 self.boat.sprite = pygame.transform.flip(self.boat.sprite, True, False)
+        
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.boat.base_y -= self.boat.speed
+            action = self.current_control_map['up']
+            if action == 'left':
+                self.boat.x -= self.boat.speed
+            elif action == 'right':
+                self.boat.x += self.boat.speed
+            elif action == 'up':
+                self.boat.base_y -= self.boat.speed
+            elif action == 'down':
+                self.boat.base_y += self.boat.speed
+        
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.boat.base_y += self.boat.speed
+            action = self.current_control_map['down']
+            if action == 'left':
+                self.boat.x -= self.boat.speed
+            elif action == 'right':
+                self.boat.x += self.boat.speed
+            elif action == 'up':
+                self.boat.base_y -= self.boat.speed
+            elif action == 'down':
+                self.boat.base_y += self.boat.speed
+        
+        if self.boat.is_drunk:
+            self.boat.x += drunk_drift_x
+            self.boat.base_y += drunk_drift_y
+        
         if keys[pygame.K_1]: self.selected_bait = Seaweed(is_bait=True)
         if keys[pygame.K_2]: self.selected_bait = Shrimp(is_bait=True)
         if keys[pygame.K_3]: self.selected_bait = Clam(is_bait=True)

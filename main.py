@@ -34,7 +34,7 @@ views = {
     "town": TownView(),
     "crab_vendor": CrabVendorView(),
     "shipyard": ShipyardView(boat),
-    "pub": PubView()
+    "pub": PubView(boat)
 }
 current_view = views["start_menu"]
 
