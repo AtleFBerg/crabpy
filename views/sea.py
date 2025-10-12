@@ -183,13 +183,7 @@ class SeaView(BaseView):
         return None
 
     def handle_keys(self, keys):
-        drunk_drift_x = 0
-        drunk_drift_y = 0
-        
-        if self.boat.is_drunk:
-            drunk_drift_x = random.uniform(-0.5, 0.5)
-            drunk_drift_y = random.uniform(-0.5, 0.5)
-        
+        # Smooth drunk movement - just control remapping, no auto drift
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             action = self.current_control_map['left']
             if action == 'left':
@@ -241,10 +235,6 @@ class SeaView(BaseView):
                 self.boat.base_y -= self.boat.speed
             elif action == 'down':
                 self.boat.base_y += self.boat.speed
-        
-        if self.boat.is_drunk:
-            self.boat.x += drunk_drift_x
-            self.boat.base_y += drunk_drift_y
         
         if keys[pygame.K_1]: self.selected_bait = Seaweed(is_bait=True)
         if keys[pygame.K_2]: self.selected_bait = Shrimp(is_bait=True)
