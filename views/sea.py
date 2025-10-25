@@ -6,6 +6,7 @@ from animations.underwater_animation import UnderwaterAnimation
 from animations.water_animation import WaterAnimation
 import config
 from entities.boat import Boat
+from services.score_service import score_service
 import utils
 from entities.food import *
 from entities.crab import Crab
@@ -31,14 +32,15 @@ class SeaView(BaseView):
         self.pip_width, self.pip_height = 125, 75
         self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
         self.periscope_img = pygame.image.load("assets/sprites/periscope.png").convert_alpha()
-        # self.periscope_img = pygame.transform.scale(self.periscope_img, (144, 96))
         self.periscope_img = pygame.transform.scale(self.periscope_img, (self.pip_width + 40, self.pip_height + 40))
-        
         self.drunk_remap_timer = 0
-        self.drunk_remap_duration = 90  # Remap every 3 seconds (at 30 fps)
+        self.drunk_remap_duration = 90  
         self.current_control_map = {'left': 'left', 'right': 'right', 'up': 'up', 'down': 'down'}
+        score_service.register_reset_callback(self.reset_game_world)
 
     def update(self, screen, camera_x, camera_y, inventory, font):
+        score_service.update()
+    
         if self.boat.is_drunk:
             self.drunk_remap_timer += 1
             if self.drunk_remap_timer >= self.drunk_remap_duration:
@@ -70,7 +72,13 @@ class SeaView(BaseView):
         if self.boat.is_drunk:
             drunk_text = font.render(f"Drunk! {self.boat.drunk_timer // 30}s", True, (255, 100, 100))
             screen.blit(drunk_text, (config.SCREEN_WIDTH // 2 - 100, 10))
-
+        # Draw the timer on screen
+        from services.game_timer_service import game_timer
+        game_timer.draw_timer(screen, config.SCREEN_WIDTH/ 2 - 100, 10)  # Position below other UI elements
+        
+        # Draw current score
+        score_text = font.render(f"Score: {score_service.total_score}", True, (255, 255, 255))
+        screen.blit(score_text, (config.SCREEN_WIDTH/ 2 - 100, 60))
     
     def update_camera(self):
         return utils.update_camera(self.boat)
@@ -87,7 +95,6 @@ class SeaView(BaseView):
         }
 
     def draw(self, screen, camera_x, camera_y):
-        # Additional drawing logic if needed
         pass
 
     def update_crabs(self, screen, camera_x, camera_y):
@@ -130,13 +137,11 @@ class SeaView(BaseView):
     def draw_pots(self, screen, camera_x, camera_y):
         pot_under_boat = None
         MARGIN = 100
-        # Find pot under boat
         if self.boat.pots:
             for pot in self.boat.pots:
                 if abs(pot.x - self.boat.x) < MARGIN // 2 and abs(pot.y - self.boat.base_y) < MARGIN // 2:
                     pot_under_boat = pot
                     break
-        # Draw pots, highlighting the one under the boat
         if self.boat.pots:
             for crab_pot in self.boat.pots:
                 highlight = (crab_pot is pot_under_boat)
@@ -153,15 +158,14 @@ class SeaView(BaseView):
                 if event.unicode.lower() in 'crab':
                     self.cheat_code += event.unicode.lower()
                     if len(self.cheat_code) > 4:
-                        self.cheat_code = self.cheat_code[-4:]  # Keep only last 4 chars
+                        self.cheat_code = self.cheat_code[-4:] 
                     if self.cheat_code == "crab":
-                        self.cheat_active = not self.cheat_active  # Toggle cheat
-                        self.cheat_code = ""  # Reset after activation
+                        self.cheat_active = not self.cheat_active  
+                        self.cheat_code = "" 
                 else:
-                    self.cheat_code = ""  # Reset if wrong key pressed
+                    self.cheat_code = ""  
                 
                 if event.key == pygame.K_SPACE:
-                    # ...existing space key code...
                     if not self.selected_bait:
                         continue
                     MARGIN = 100
@@ -180,10 +184,11 @@ class SeaView(BaseView):
         if self.boat.x <= 0:
             self.boat.x = 10
             return "town"
+        if score_service.is_game_over():
+            return "game_over" 
         return None
 
     def handle_keys(self, keys):
-        # Smooth drunk movement - just control remapping, no auto drift
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             action = self.current_control_map['left']
             if action == 'left':
@@ -244,7 +249,6 @@ class SeaView(BaseView):
         if keys[pygame.K_6]: self.selected_bait = Starfish(is_bait=True)
 
     def draw_pip(self, screen):
-        # Clear the PiP surface each frame
         self.pip_surface.fill((0, 0, 0, 0))
         boat_center_x = self.boat.x + self.boat.sprite.get_width() // 2
         boat_center_y = self.boat.base_y + self.boat.sprite.get_height() // 2
@@ -264,7 +268,6 @@ class SeaView(BaseView):
                 pip_x = crab_pot.x - pip_camera_x
                 pip_y = crab_pot.y - pip_camera_y
                 self.pip_surface.blit(crab_pot.underwater_pot_sprite, (pip_x, pip_y))
-        # Create a circular mask and blit the PiP as a round view
         mask = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA)
         pygame.draw.ellipse(mask, (255, 255, 255, 255), (0, 0, self.pip_width, self.pip_height))
         round_pip = self.pip_surface.copy()
@@ -273,3 +276,35 @@ class SeaView(BaseView):
         pip_y = screen.get_height() - self.pip_height - 20
         screen.blit(round_pip, (screen.get_width() - self.pip_width - 20, screen.get_height() - self.pip_height - 20))
         screen.blit(self.periscope_img, (pip_x - 20 , pip_y - 20))
+
+    def reset_game_world(self):
+        print("🌊 Resetting sea world...")
+        
+        # Reset boat
+        self.boat.x = config.SCREEN_WIDTH // 2
+        self.boat.y = config.SCREEN_HEIGHT // 2
+        self.boat.base_y = self.boat.y
+        self.boat.is_drunk = False
+        self.boat.drunk_timer = 0
+        self.boat.pots = []  # Clear all pots
+        
+        global camera_x, camera_y
+        camera_x = 0
+        camera_y = 0
+        
+        self.all_crabs = [Crab() for _ in range(config.INITIAL_CRAB_COUNT)]
+        
+        # Reset food
+        self.all_food.clear()
+        utils.world_food_respawn(self.all_food)
+        
+        # Reset other sea view specific stuff
+        self.selected_bait = None
+        self.cheat_active = False
+        self.underwater = False
+        
+        # Reset drunk controls
+        self.current_control_map = {'left': 'left', 'right': 'right', 'up': 'up', 'down': 'down'}
+        self.drunk_remap_timer = 0
+        
+        print("✅ Sea world reset complete!")

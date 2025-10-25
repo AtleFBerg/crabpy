@@ -23,6 +23,7 @@ Explore the sea, catch crabs — all in a lightweight, pixel-art sandbox!
 - **Pygame**
 - **Pygbag** – compiles Pygame to WebAssembly for the browser
 - **Azure Static Web Apps** – free deployment for hobbyists
+- **Supabase** - database for highscore recording
 
 ## 🧩 Controls
 

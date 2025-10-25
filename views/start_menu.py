@@ -5,16 +5,17 @@ from views.base_view import BaseView
 class StartMenuView(BaseView):
     def __init__(self):
         self.background_img = StartMenuView.load_background()
+        self.controls_img = StartMenuView.load_controls()
+        self.controls_img = pygame.transform.scale(self.controls_img, (self.controls_img.get_width() // 4, self.controls_img.get_height() // 4))
         self.buttons = [
-            {"label": "New Game", "rect": pygame.Rect(340, 200, 200, 50)},
-            {"label": "Load Game", "rect": pygame.Rect(340, 270, 200, 50)},
-            {"label": "Settings", "rect": pygame.Rect(340, 340, 200, 50)},
+            {"label": "New Game", "rect": pygame.Rect(340, 340, 200, 50)},
             {"label": "Quit", "rect": pygame.Rect(340, 410, 200, 50)},
         ]
         self.font = pygame.font.SysFont(None, 40)
 
     def update(self, screen, *args, **kwargs):
         screen.blit(self.background_img, (0, 0))
+        screen.blit(self.controls_img, (screen.get_width() - self.controls_img.get_width() - 10, 10))
         for button in self.buttons:
             pygame.draw.rect(screen, (30, 144, 255), button["rect"])
             label_surface = self.font.render(button["label"], True, (255, 255, 255))
@@ -46,3 +47,8 @@ class StartMenuView(BaseView):
     @staticmethod
     def load_background():
         return pygame.image.load('assets/background.png').convert_alpha()
+    
+    @staticmethod
+    def load_controls():
+
+        return pygame.image.load('assets/controls.png').convert_alpha()

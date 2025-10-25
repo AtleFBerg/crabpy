@@ -3,7 +3,9 @@ import pygame
 import math
 import time
 import random
-from .crab_pot import CrabPot  # Adjust import as needed
+from .crab_pot import CrabPot
+import config
+
 
 class Boat:
     def __init__(self, x, y, max_pots=3):
@@ -21,7 +23,7 @@ class Boat:
         self.wobble_timer = 0
         self.wobble_offset = 0
         self.is_drunk = False
-        self.drunk_timer = 0  # Timer in frames (30 fps = 1800 frames per minute)
+        self.drunk_timer = 0  
 
     def move(self, keys):
         if keys[pygame.K_a or pygame.K_RIGHT]: self.x -= self.speed
@@ -40,6 +42,12 @@ class Boat:
             all_food.append(new_bait)
 
     def raise_pot(self, pot: CrabPot, all_food, crab_inventory):
+        from services.score_service import score_service 
+        if pot.caught_crabs:
+            for crab in pot.caught_crabs:
+                points = score_service.add_crab_catch(is_drunk=self.is_drunk)
+                print(f"Caught crab! +{points} points" + (" (DRUNK BONUS!)" if self.is_drunk else ""))
+
         crab_inventory["crab_count"] += len(pot.caught_crabs)
         pot.raise_pot(all_food)
         self.pots.remove(pot)
@@ -63,3 +71,22 @@ class Boat:
     def draw(self, screen, camera_x, camera_y):
         screen.blit(self.sprite, (self.x - camera_x, self.base_y - camera_y + self.wobble_offset, ))
 
+    def reset_for_new_game(self):
+        """Reset boat state for new game"""
+        print("⛵ Resetting boat...")
+        
+        # Reset position
+        self.x = config.SCREEN_WIDTH // 2
+        self.y = config.SCREEN_HEIGHT // 2
+        self.base_y = self.y
+        
+        # Reset drunk state
+        self.is_drunk = False
+        self.drunk_timer = 0
+        
+        # Clear all pots
+        self.pots.clear()
+        
+        print("✅ Boat reset complete!")
+
+   
