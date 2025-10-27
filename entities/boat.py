@@ -76,13 +76,17 @@ class Boat:
         print("⛵ Resetting boat...")
         
         # Reset position
-        self.x = config.SCREEN_WIDTH // 2
-        self.y = config.SCREEN_HEIGHT // 2
+        self.x = 100
+        self.y = 100
         self.base_y = self.y
         
         # Reset drunk state
         self.is_drunk = False
         self.drunk_timer = 0
+        
+        # Reset upgrades to initial values
+        self.speed = 2.0  # Reset to initial speed
+        self.max_pots = 3  # Reset to initial max pots
         
         # Clear all pots
         self.pots.clear()

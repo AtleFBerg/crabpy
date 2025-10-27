@@ -1,5 +1,6 @@
 import pygame
 import asyncio
+from services.score_service import score_service
 from views.base_view import BaseView
 from integrations.supabase_client import supabase_client
 import config
@@ -15,7 +16,7 @@ class HighscoresView(BaseView):
         self.loading_started = False
         self.load_task = None  # Track the async task
         
-        self.back_button = pygame.Rect(50, config.SCREEN_HEIGHT - 80, 150, 50)
+        self.new_game_button = pygame.Rect(50, config.SCREEN_HEIGHT - 80, 150, 50)
     
     async def load_scores_async(self):
         try:
@@ -114,12 +115,12 @@ class HighscoresView(BaseView):
         refresh_rect = refresh_text.get_rect(center=refresh_button.center)
         screen.blit(refresh_text, refresh_rect)
         
-        # Back button
-        pygame.draw.rect(screen, (100, 0, 0), self.back_button)
-        back_text = self.font_small.render("BACK", True, (255, 255, 255))
-        back_rect = back_text.get_rect(center=self.back_button.center)
-        screen.blit(back_text, back_rect)
-    
+        # New Game button
+        pygame.draw.rect(screen, (100, 0, 0), self.new_game_button)
+        new_game_text = self.font_small.render("NEW GAME", True, (255, 255, 255))
+        new_game_rect = new_game_text.get_rect(center=self.new_game_button.center)
+        screen.blit(new_game_text, new_game_rect)
+
     def handle_events(self, events, inventory):
         for event in events:
             if event.type == pygame.QUIT:
@@ -131,9 +132,10 @@ class HighscoresView(BaseView):
                 elif event.key == pygame.K_r and not self.loading:  # Only refresh if not already loading
                     self.refresh_scores()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # Back button
-                if self.back_button.collidepoint(event.pos):
-                    return "game_over"
+                # New Game button
+                if self.new_game_button.collidepoint(event.pos):
+                    score_service.start_new_game()
+                    return "sea"
                 
                 refresh_button = pygame.Rect(config.SCREEN_WIDTH - 200, config.SCREEN_HEIGHT - 80, 150, 50)
                 if refresh_button.collidepoint(event.pos) and not self.loading:

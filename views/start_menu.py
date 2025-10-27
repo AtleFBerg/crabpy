@@ -8,8 +8,8 @@ class StartMenuView(BaseView):
         self.controls_img = StartMenuView.load_controls()
         self.controls_img = pygame.transform.scale(self.controls_img, (self.controls_img.get_width() // 4, self.controls_img.get_height() // 4))
         self.buttons = [
-            {"label": "New Game", "rect": pygame.Rect(340, 340, 200, 50)},
-            {"label": "Quit", "rect": pygame.Rect(340, 410, 200, 50)},
+            {"label": "New Game", "rect": pygame.Rect(200, 500, 200, 50)},
+            {"label": "Highscores", "rect": pygame.Rect(480, 500, 200, 50)},
         ]
         self.font = pygame.font.SysFont(None, 40)
 
@@ -34,11 +34,10 @@ class StartMenuView(BaseView):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for button in self.buttons:
                     if button["rect"].collidepoint(event.pos):
-                        if button["label"] == "Quit":
-                            pygame.quit()
-                            exit()
-                        elif button["label"] == "New Game":
-                            return "sea"  # Return the key for the new view
+                        if button["label"] == "New Game":
+                            return "sea"
+                        elif button["label"] == "Highscores":
+                            return "highscores"
         return None
 
     def handle_keys(self, keys, *args, **kwargs):
