@@ -6,6 +6,8 @@ class ScoreService:
     def __init__(self):
         self.reset_game()
         self.reset_callbacks = []  # List of functions to call when resetting
+        self.burlesque_bonus_active = False  # Double points from burlesque
+        self.cheats_used = False  # Track if cheats were used this game
     
     def reset_game(self):
         self.crabs_caught = 0
@@ -13,6 +15,8 @@ class ScoreService:
         self.total_score = 0
         self.game_active = True
         self.game_ended = False
+        self.burlesque_bonus_active = False
+        self.cheats_used = False  # Reset cheat status
     
     def register_reset_callback(self, callback):
         self.reset_callbacks.append(callback)
@@ -47,8 +51,9 @@ class ScoreService:
             
         base_points = 10
         drunk_multiplier = 3 if is_drunk else 1
+        burlesque_multiplier = 2 if self.burlesque_bonus_active else 1
         
-        points = base_points * drunk_multiplier
+        points = base_points * drunk_multiplier * burlesque_multiplier
         
         self.crabs_caught += 1
         if is_drunk:
@@ -58,13 +63,27 @@ class ScoreService:
         
         return points
     
+    def set_burlesque_bonus(self, active: bool):
+        """Enable or disable the burlesque double points bonus"""
+        self.burlesque_bonus_active = active
+        if active:
+            print("Burlesque bonus activated! Double points for caught crabs!")
+        else:
+            print("Burlesque bonus expired.")
+    
+    def mark_cheats_used(self):
+        """Mark that cheats were used in this game"""
+        self.cheats_used = True
+        print("Cheats detected! Highscore entry will be disabled.")
+    
     def get_final_score(self) -> Dict:
         return {
             "total_score": self.total_score,
             "crabs_caught": self.crabs_caught,
             "drunk_catches": self.drunk_catches,
             "drunk_bonus": self.drunk_catches * 20,
-            "game_time": game_timer.get_elapsed_time()
+            "game_time": game_timer.get_elapsed_time(),
+            "cheats_used": self.cheats_used
         }
     
     def end_game(self):

@@ -12,6 +12,7 @@ from views.town import TownView
 from views.shipyard import ShipyardView
 from views.crab_vendor import CrabVendorView
 from views.pub import PubView
+from views.burlesque import BurlesqueView
 from views.start_menu import StartMenuView
 from services.game_timer_service import game_timer
 
@@ -40,6 +41,7 @@ views = {
     "crab_vendor": CrabVendorView(),
     "shipyard": ShipyardView(boat),
     "pub": PubView(boat),
+    "burlesque": BurlesqueView(),
     "highscores": HighscoresView(),
 }
 current_view = views["start_menu"]

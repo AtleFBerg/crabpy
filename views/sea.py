@@ -161,6 +161,8 @@ class SeaView(BaseView):
                         self.cheat_code = self.cheat_code[-4:] 
                     if self.cheat_code == "crab":
                         self.cheat_active = not self.cheat_active  
+                        if self.cheat_active:
+                            score_service.mark_cheats_used()  # Mark cheats as used
                         self.cheat_code = "" 
                 else:
                     self.cheat_code = ""  

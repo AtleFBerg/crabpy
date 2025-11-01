@@ -5,7 +5,7 @@
  3d 3d 3d 3d 3e 3e 3e 3e 3d 3d 3d 3d 3e 3e 3e 3e 3d 3d 3d 3d 3e 3e 3e 3e 3d 3d 3d 3d 3e 3e
  3a 3b 3c 3a 3b 3c 3a 3b 3c 3a 3b 3c 3a 3b 3c 3a 3b 3c 3a 3b 3c 3a 3b 3c 3a 3b 3c 3a 3b 3c 3a 3b
  2a 2c 2c 2c 2c 2c 2a 2c 2c 2c 2c 2c 2b 2b 2b 2a 2c 2c 2c 2c 2c 2b 2b 2b 2a 2c 2c 2c 2c 2c 2a 2b
- 1c 1c 1c 1c 1c C C 1c 1c 1c 1c 1c 1b 1b 1b P P 1b 1b 1b 1c 1c 1c 1c 1c S S 1b 1b 1b 1a 1b
+ 1c 1c 1c 1c 1c C C 1c 1c 1c 1c 1c B B 1b P P 1b 1b 1b 1c 1c 1c 1c 1c S S 1b 1b 1b 1a 1b
  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

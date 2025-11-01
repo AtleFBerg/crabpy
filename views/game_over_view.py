@@ -50,7 +50,10 @@ class GameOverView(BaseView):
         self.buttons = []
         y_offset = 400
         
-        if self.is_high_score:
+        # Check if cheats were used
+        cheats_used = self.score_data and self.score_data.get('cheats_used', False)
+        
+        if self.is_high_score and not cheats_used:
             self.buttons.append({
                 "label": "ENTER INITIALS",
                 "rect": pygame.Rect(center_x - button_width // 2, y_offset, button_width, button_height),
@@ -98,6 +101,11 @@ class GameOverView(BaseView):
             checking_text = self.font_medium.render("Checking high score...", True, (255, 255, 0))
             checking_rect = checking_text.get_rect(center=(config.SCREEN_WIDTH // 2, 140))
             screen.blit(checking_text, checking_rect)
+        elif self.score_data and self.score_data.get('cheats_used', False):
+            # Cheater message - no highscore for you!
+            cheat_text = self.font_medium.render("Dirty cheaters don't get a highscore!", True, (255, 100, 100))
+            cheat_rect = cheat_text.get_rect(center=(config.SCREEN_WIDTH // 2, 140))
+            screen.blit(cheat_text, cheat_rect)
         elif self.is_high_score:
             # High score notification
             high_score_text = self.font_medium.render("NEW HIGH SCORE!", True, (255, 215, 0))
@@ -146,7 +154,8 @@ class GameOverView(BaseView):
                 if event.key == pygame.K_ESCAPE:
                     return "town"
                 elif event.key == pygame.K_RETURN:
-                    if self.is_high_score and not self.is_checking_score:
+                    cheats_used = self.score_data and self.score_data.get('cheats_used', False)
+                    if self.is_high_score and not self.is_checking_score and not cheats_used:
                         return "highscore_entry"
                     elif not self.is_checking_score:
                         score_service.start_new_game()

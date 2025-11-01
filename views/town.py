@@ -2,6 +2,7 @@ import pygame
 
 from animations.water_animation import WaterAnimation
 from .base_view import BaseView
+from services.game_timer_service import game_timer
 import config
 import os
 
@@ -18,15 +19,15 @@ class TownView(BaseView):
         'S': (60, 180, 60),   # Shipyard
         'C': (200, 80, 80),   # Crab vendor
         'E': (255, 255, 0),   # Entrance (to sea)
+        'B': (150, 50, 150),  # Burlesque joint
         '@': (0, 0, 0),       # Player
     }
-    ENTRANCES = {'P': 'pub', 'S': 'shipyard', 'C': 'crab_vendor', 'E': 'sea'}
 
     def __init__(self):
         self.font = pygame.font.SysFont(None, 32)
         self.town_map = self.load_map()
         self.player_pos = self.find_spawn()
-        self.info_text = "Walk around town!"
+        self.info_text = "Welcome to Crab Town!"
         self.transition = None
         self.move_cooldown = 0
         self.animating = False
@@ -35,6 +36,15 @@ class TownView(BaseView):
         self.anim_to = None
         self.anim_duration = 4  # frames for smooth transition
         self.anim_progress = 0
+        
+        # Entrance mappings
+        self.ENTRANCES = {
+            'E': 'sea',
+            'P': 'pub',
+            'S': 'shipyard',
+            'C': 'crab_vendor',
+            'B': 'burlesque' 
+        }
         self.player_sprite = pygame.image.load("assets/sprites/player_sprite.png").convert_alpha()
         self.player_sprite = pygame.transform.scale(self.player_sprite, (self.TILE_SIZE, self.TILE_SIZE))
         self.grass_tile =  pygame.image.load("assets/sprites/grass_tile.png").convert_alpha()
@@ -68,12 +78,14 @@ class TownView(BaseView):
             '3e': (*self.tile_rect(1, 6, 4, 0.5), 0, -16), 
             '3f': self.tile_rect(1.5, 6, 3.5, 0.5),
 
-            # Roofs
+            # Entrances
             'E': self.tile_rect(11, 12.5, 2, 1),
             'C': self.tile_rect(13.5, 12.5, 2, 1),
             'S': self.tile_rect(13.5, 12.5, 2, 1),
             'P': self.tile_rect(13.5, 12.5, 2, 1),
-            # Rooftop (just a few samples for demo)
+            'B': self.tile_rect(13.5, 12.5, 2, 1),
+
+            # Rooftop
             'R': (*self.tile_rect(0, 0, 4.5, 5), 16, -20),
             'r': (*self.tile_rect(1.5, 0, 2, 5), 16, -20),
         }
@@ -109,15 +121,29 @@ class TownView(BaseView):
         for y in range(0, height, self.TILE_SIZE):
             pygame.draw.line(screen, (50, 50, 50), (0, y), (width, y))
 
+    def is_burlesque_open(self):
+        if not game_timer.is_running:
+            return False
+        elapsed_time = game_timer.get_elapsed_time()
+        return elapsed_time >= 10 
+    
     def draw_tile(self, screen, symbol, x, y, map_x, map_y):
         if symbol in {'-', '_'}:
             return
-    
+        
         tileset = self.get_tileset()
-        rect_info = self.TILE_RECTS.get(symbol)
-        if symbol in ('R', 'r', 'E', 'C', 'P', 'S', '1a', '1b', '1c', '2a', '2b', '2c', '3d', '3e'):
+        
+        # Determine which tile mapping to use
+        tile_symbol = symbol
+        if symbol == 'B' and not self.is_burlesque_open():
+            tile_symbol = 'E'  # Use closed door mapping
+        
+        rect_info = self.TILE_RECTS.get(tile_symbol)
+        
+        # Check if this is a multi-tile symbol
+        if tile_symbol in ('R', 'r', 'E', 'C', 'P', 'S', 'B', '1a', '1b', '1c', '2a', '2b', '2c', '3d', '3e'):
+            # For multi-tile, we need to check against the original symbol for grouping
             if self.should_draw_multi_tile(symbol, map_x, map_y) and rect_info:
-                # Support (x, y, w, h) or (x, y, w, h, overlap)
                 if len(rect_info) == 6:
                     rect = pygame.Rect(*rect_info[:4])
                     x_overlap = rect_info[4]
@@ -143,13 +169,13 @@ class TownView(BaseView):
             y_offset = y - y_overlap if y_overlap else y
             x_offset = x - x_overlap if x_overlap else x
             screen.blit(tileset, (x_offset, y_offset), rect)
-        elif symbol == '.':
+        elif tile_symbol == '.':
             screen.blit(self.cobblestone_tile, (x, y))
         else:
-            color = self.COLORS.get(symbol, (180, 180, 180))
+            color = self.COLORS.get(tile_symbol, (180, 180, 180))
             pygame.draw.rect(screen, color, (x, y, self.TILE_SIZE, self.TILE_SIZE))
-            
-    def update(self, screen, camera_x, camera_y, *args, **kwargs):
+    
+    def update(self, screen, camera_x, camera_y, inventory, font, *args, **kwargs):
         self.fill_with_grass(screen)
         self.water_animation.update()
         water_y = screen.get_height() - self.water_anim_rows * self.TILE_SIZE
@@ -173,14 +199,49 @@ class TownView(BaseView):
             px, py = self.player_pos
             screen.blit(self.player_sprite, (px * self.TILE_SIZE, py * self.TILE_SIZE))
         # Info
+        remaining_time_for_burlesque = max(0, 4 * 60 - game_timer.get_elapsed_time())
+        if remaining_time_for_burlesque > 0:
+            minutes = remaining_time_for_burlesque // 60
+            seconds = remaining_time_for_burlesque % 60
+            burlesque_info = f"Saucy Sailor opens in {minutes:02d}:{seconds:02d}"
+        else:
+            burlesque_info = "The Saucy Sailor is open!"
+            
         text_surface = self.font.render(self.info_text, True, (60, 40, 20))
         screen.blit(text_surface, (10, 10))
+        
+        # Show burlesque opening info
+        burlesque_surface = self.font.render(burlesque_info, True, (200, 50, 100))
+        screen.blit(burlesque_surface, (10, 40))
+        
+        # Show current money
+        money_text = f"Money: {inventory.get('money', 0)}"
+        money_surface = self.font.render(money_text, True, (255, 215, 0))
+        screen.blit(money_surface, (10, 70))
+        
+        # Draw the timer on screen (same position as sea view)
+        game_timer.draw_timer(screen, config.SCREEN_WIDTH/ 2 - 100, 10)  # Position below other UI elements
+        
+        # Draw current score (same position as sea view)
+        from services.score_service import score_service
+        score_text = font.render(f"Score: {score_service.total_score}", True, (255, 255, 255))
+        screen.blit(score_text, (config.SCREEN_WIDTH/ 2 - 100, 60))
 
-    def handle_events(self, events, *args, **kwargs):
+    def handle_events(self, events, inventory, *args, **kwargs):
         # Check for entrance on every event (so view can change even if player is standing still)
         px, py = self.player_pos
         cell = self.town_map[py][px]
         if cell in self.ENTRANCES:
+            # Special check for burlesque joint
+            if cell == 'B' and not self.is_burlesque_open():
+                self.info_text = "The Saucy Sailor opens after 4 minutes of game time."
+                # Move player back to previous tile
+                if hasattr(self, 'anim_from') and self.anim_from:
+                    self.player_pos = list(self.anim_from)
+                else:
+                    self.player_pos[0] -= 1  # Move left
+                return None
+            
             # Move player back to previous tile (simulate stepping out of the shop)
             if hasattr(self, 'anim_from') and self.anim_from:
                 self.player_pos = list(self.anim_from)
@@ -191,6 +252,8 @@ class TownView(BaseView):
                 elif cell == 'S':  # Shipyard
                     self.player_pos[0] -= 1
                 elif cell == 'C':  # Crab vendor
+                    self.player_pos[0] -= 1
+                elif cell == 'B':  # Burlesque
                     self.player_pos[0] -= 1
                 elif cell == 'E':  # Sea
                     self.player_pos[1] += 1
@@ -222,6 +285,11 @@ class TownView(BaseView):
                 self.move_cooldown = self.anim_duration
                 cell = self.town_map[ny][nx]
                 if cell in self.ENTRANCES:
+                    # Special check for burlesque joint
+                    if cell == 'B' and not self.is_burlesque_open():
+                        # Don't transition, just show message
+                        self.info_text = "The Saucy Sailor opens after 4 minutes of game time."
+                        return None
                     # Return the name of the entrance view immediately
                     return self.ENTRANCES[cell]
         if not self.animating and self.transition:
@@ -232,7 +300,11 @@ class TownView(BaseView):
 
     def is_walkable(self, x, y):
         if 0 <= y < len(self.town_map) and 0 <= x < len(self.town_map[0]):
-            return self.town_map[y][x] in ('.', '-', 'E', 'P', 'S', 'C')
+            cell = self.town_map[y][x]
+            if cell == 'B':
+                # Burlesque is only walkable if it's open
+                return self.is_burlesque_open()
+            return cell in ('.', '-', 'E', 'P', 'S', 'C')
         return False
 
     def load_map(self):
