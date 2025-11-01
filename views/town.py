@@ -125,7 +125,7 @@ class TownView(BaseView):
         if not game_timer.is_running:
             return False
         elapsed_time = game_timer.get_elapsed_time()
-        return elapsed_time >= 10 
+        return elapsed_time >= 4 * 60 
     
     def draw_tile(self, screen, symbol, x, y, map_x, map_y):
         if symbol in {'-', '_'}:

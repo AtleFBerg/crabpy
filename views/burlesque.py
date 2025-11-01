@@ -150,7 +150,7 @@ class BurlesqueView(BaseView):
         pygame.draw.rect(screen, (255, 255, 255), self.good_time_button, 3)
         
         # Static button text
-        button_text = "Good time 500$"
+        button_text = "Good time 300$"
         text_color = (255, 255, 255) if not self.good_time_active else (150, 150, 150)
             
         button_surface = self.font.render(button_text, True, text_color)
