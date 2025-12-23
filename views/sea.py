@@ -5,6 +5,7 @@ from animations import gui_elements
 from animations.underwater_animation import UnderwaterAnimation
 from animations.water_animation import WaterAnimation
 import config
+import simulation
 from entities.boat import Boat
 from services.score_service import score_service
 import utils
@@ -21,14 +22,10 @@ class SeaView(BaseView):
         self.boat = boat
         self.water_animation = WaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
         self.underwater_animation = UnderwaterAnimation(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
-        self.all_food: list[Food] = []
         self.selected_bait = None
-        utils.world_food_respawn(self.all_food)
-        self.all_crabs: list[Crab] = [Crab() for _ in range(config.INITIAL_CRAB_COUNT)]
         self.cheat_code = ""
         self.cheat_active = False
         self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
-        self.world_food_respawn_timer = 0
         self.pip_width, self.pip_height = 125, 75
         self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
         self.periscope_img = pygame.image.load("assets/sprites/periscope.png").convert_alpha()
@@ -57,16 +54,17 @@ class SeaView(BaseView):
             self.water_animation.draw_ocean(screen, camera_x, camera_y)
         if inventory["reverse_periscope"]:
             self.draw_pip(screen)
-        self.update_crabs(screen, camera_x, camera_y)
+        self.render_crabs(screen, camera_x, camera_y, simulation.all_crabs)
         self.draw_boat(screen, camera_x, camera_y)
         self.draw_pots(screen, camera_x, camera_y)
-        self.draw_food(screen, camera_x, camera_y)
-        gui_elements.draw_average_crab_food_preferences(screen, self.all_crabs, font)
+        self.render_food(screen, camera_x, camera_y, simulation.all_food)
+    
+        gui_elements.draw_average_crab_food_preferences(screen, simulation.all_crabs, font)
         if self.cheat_active:
             gui_elements.draw_toggle_button(screen, self.toggle_button_rect, font, "Above" if not self.underwater else "Underwater")
         gui_elements.draw_inventory(screen, inventory, font)
         gui_elements.draw_selected_bait(screen, self.selected_bait, font)
-        gui_elements.draw_crab_count(self.all_crabs, screen)
+        gui_elements.draw_crab_count(simulation.all_crabs, screen)
         gui_elements.draw_to_town_arrow(screen, camera_x, camera_y)
         
         if self.boat.is_drunk:
@@ -80,6 +78,16 @@ class SeaView(BaseView):
         score_text = font.render(f"Score: {score_service.total_score}", True, (255, 255, 255))
         screen.blit(score_text, (config.SCREEN_WIDTH/ 2 - 100, 60))
     
+    def render_crabs(self, screen, camera_x, camera_y, all_crabs):
+        for crab in all_crabs:
+            if self.underwater:
+                screen.blit(crab.sprite, (crab.x - camera_x, crab.y - camera_y))
+
+    def render_food(self, screen, camera_x, camera_y, all_food):
+        for food in all_food:
+            if self.underwater:
+                screen.blit(food.sprite, (food.x - camera_x, food.y - camera_y))
+
     def update_camera(self):
         return utils.update_camera(self.boat)
     
@@ -97,21 +105,6 @@ class SeaView(BaseView):
     def draw(self, screen, camera_x, camera_y):
         pass
 
-    def update_crabs(self, screen, camera_x, camera_y):
-        food_to_remove = []
-        for crab in self.all_crabs:
-            crab.update()
-            if crab.energy <= 0.0:
-                self.all_crabs.remove(crab)
-                continue
-            if self.underwater:
-                screen.blit(crab.sprite, (crab.x - camera_x, crab.y - camera_y))
-            crab.make_decision(all_crabs=self.all_crabs, potential_food=self.all_food)
-            if crab.food_to_remove:
-                food_to_remove.append(crab.food_to_remove)
-                crab.food_to_remove = None
-        if food_to_remove:
-            Food.remove_food(food_to_remove, self.all_food)
 
     def draw_food(self, screen, camera_x, camera_y):
         food_counts = defaultdict(int)
@@ -146,7 +139,7 @@ class SeaView(BaseView):
             for crab_pot in self.boat.pots:
                 highlight = (crab_pot is pot_under_boat)
                 crab_pot.draw(screen, camera_x, camera_y, self.underwater, highlight=highlight)
-                crab_pot.check_for_crabs(self.all_crabs, self.all_food)
+                crab_pot.check_for_crabs(simulation.all_crabs, simulation.all_food)
     
     def handle_events(self, events, crab_inventory):
         for event in events:
@@ -177,9 +170,9 @@ class SeaView(BaseView):
                             pot_under_boat = pot
                             break
                     if pot_under_boat:
-                        self.boat.raise_pot(pot_under_boat, self.all_food, crab_inventory)
+                        self.boat.raise_pot(pot_under_boat, simulation.all_food, crab_inventory)  # Use global food
                     else:
-                        self.boat.drop_pot(self.selected_bait, self.all_food)
+                        self.boat.drop_pot(self.selected_bait, simulation.all_food)  # Use global food
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if self.cheat_active and self.toggle_button_rect.collidepoint(event.pos):
                     self.underwater = not self.underwater
@@ -257,11 +250,11 @@ class SeaView(BaseView):
         pip_camera_x = boat_center_x - self.pip_width // 2
         pip_camera_y = boat_center_y - self.pip_height // 2
         self.underwater_animation.draw(self.pip_surface, pip_camera_x, pip_camera_y)
-        for food in self.all_food:
+        for food in simulation.all_food:
             pip_x = food.x - pip_camera_x
             pip_y = food.y - pip_camera_y
             self.pip_surface.blit(food.sprite, (pip_x, pip_y))
-        for crab in self.all_crabs:
+        for crab in simulation.all_crabs:
             pip_x = crab.x - pip_camera_x
             pip_y = crab.y - pip_camera_y
             self.pip_surface.blit(crab.sprite, (pip_x, pip_y))
@@ -294,7 +287,6 @@ class SeaView(BaseView):
         camera_x = 0
         camera_y = 0
         
-        self.all_crabs = [Crab() for _ in range(config.INITIAL_CRAB_COUNT)]
         
         # Reset food
         self.all_food.clear()
