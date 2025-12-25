@@ -14,6 +14,7 @@ class CrabVendorView(BaseView):
             {"label": "Sell Crabs", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 350, 200, 50)},
             {"label": "Back to Town", "rect": pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 420, 200, 50)}
         ]
+        self.selected_button_index = 0
         self.speech_bubble = pygame.image.load('assets/speech_bubble.png').convert_alpha()
         self.speech_bubble = pygame.transform.scale(self.speech_bubble, (500, 300))
         self.speech_bubble = pygame.transform.flip(self.speech_bubble, True, False)
@@ -48,8 +49,12 @@ class CrabVendorView(BaseView):
                     text_surface = speech_font.render(line, True, (0, 0, 0))
                     text_rect = text_surface.get_rect(center=(200, + i * 20 + 200))
                     screen.blit(text_surface, text_rect)
-        for button in self.buttons:
-            pygame.draw.rect(screen, (30, 144, 255), button["rect"])
+        for i, button in enumerate(self.buttons):
+            color = (255, 165, 0) if i == self.selected_button_index else (30, 144, 255)
+            pygame.draw.rect(screen, color, button["rect"])
+            border_width = 3 if i == self.selected_button_index else 0
+            if border_width:
+                pygame.draw.rect(screen, (255, 255, 255), button["rect"], border_width)
             label_surface = self.font.render(button["label"], True, (255, 255, 255))
             label_rect = label_surface.get_rect(center=button["rect"].center)
             screen.blit(label_surface, label_rect)
@@ -60,14 +65,25 @@ class CrabVendorView(BaseView):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.selected_button_index = (self.selected_button_index - 1) % len(self.buttons)
+                elif event.key == pygame.K_DOWN:
+                    self.selected_button_index = (self.selected_button_index + 1) % len(self.buttons)
+                elif event.key == pygame.K_RETURN:
+                    selected_button = self.buttons[self.selected_button_index]
+                    if selected_button["label"] == "Back to Town":
+                        return "town"
+                    elif selected_button["label"] == "Sell Crabs":
+                        self.sell_crabs(inventory)
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                for button in self.buttons:
+                for i, button in enumerate(self.buttons):
                     if button["rect"].collidepoint(event.pos):
+                        self.selected_button_index = i
                         if button["label"] == "Back to Town":
                             return "town"
                         elif button["label"] == "Sell Crabs":
                             self.sell_crabs(inventory)
-                            pass
         return None
 
     def handle_keys(self, keys):

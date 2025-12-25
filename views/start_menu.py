@@ -11,13 +11,18 @@ class StartMenuView(BaseView):
             {"label": "New Game", "rect": pygame.Rect(200, 500, 200, 50)},
             {"label": "Highscores", "rect": pygame.Rect(480, 500, 200, 50)},
         ]
+        self.selected_button_index = 0
         self.font = pygame.font.SysFont(None, 40)
 
     def update(self, screen, *args, **kwargs):
         screen.blit(self.background_img, (0, 0))
         screen.blit(self.controls_img, (screen.get_width() - self.controls_img.get_width() - 10, 10))
-        for button in self.buttons:
-            pygame.draw.rect(screen, (30, 144, 255), button["rect"])
+        for i, button in enumerate(self.buttons):
+            color = (255, 165, 0) if i == self.selected_button_index else (30, 144, 255)
+            pygame.draw.rect(screen, color, button["rect"])
+            border_width = 3 if i == self.selected_button_index else 0
+            if border_width:
+                pygame.draw.rect(screen, (255, 255, 255), button["rect"], border_width)
             label_surface = self.font.render(button["label"], True, (255, 255, 255))
             label_rect = label_surface.get_rect(center=button["rect"].center)
             screen.blit(label_surface, label_rect)
@@ -31,9 +36,21 @@ class StartMenuView(BaseView):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.selected_button_index = (self.selected_button_index - 1) % len(self.buttons)
+                elif event.key == pygame.K_RIGHT:
+                    self.selected_button_index = (self.selected_button_index + 1) % len(self.buttons)
+                elif event.key == pygame.K_RETURN:
+                    selected_button = self.buttons[self.selected_button_index]
+                    if selected_button["label"] == "New Game":
+                        return "sea"
+                    elif selected_button["label"] == "Highscores":
+                        return "highscores"
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                for button in self.buttons:
+                for i, button in enumerate(self.buttons):
                     if button["rect"].collidepoint(event.pos):
+                        self.selected_button_index = i
                         if button["label"] == "New Game":
                             return "sea"
                         elif button["label"] == "Highscores":

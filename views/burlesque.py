@@ -39,6 +39,7 @@ class BurlesqueView(BaseView):
         # Buttons
         self.good_time_button = pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 350, 200, 50)
         self.exit_button = pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 420, 200, 50)
+        self.selected_button_index = 0  # Track which button is selected
         
         # Dialog system
         self.is_speaking = False  # Start with no dialog showing
@@ -146,8 +147,11 @@ class BurlesqueView(BaseView):
         # Draw buttons
         # Good time button - always shows the same text
         button_color = (100, 50, 75) if not self.good_time_active else (50, 25, 40)
+        if self.selected_button_index == 0:
+            button_color = (255, 165, 0)  # Orange when selected
         pygame.draw.rect(screen, button_color, self.good_time_button)
-        pygame.draw.rect(screen, (255, 255, 255), self.good_time_button, 3)
+        border_width = 3 if self.selected_button_index == 0 else 1
+        pygame.draw.rect(screen, (255, 255, 255), self.good_time_button, border_width)
         
         # Static button text
         button_text = "Good time 300$"
@@ -158,8 +162,12 @@ class BurlesqueView(BaseView):
         screen.blit(button_surface, button_rect)
         
         # Exit button
-        pygame.draw.rect(screen, (100, 0, 0), self.exit_button)
-        pygame.draw.rect(screen, (255, 255, 255), self.exit_button, 2)
+        exit_color = (100, 0, 0)
+        if self.selected_button_index == 1:
+            exit_color = (255, 165, 0)  # Orange when selected
+        pygame.draw.rect(screen, exit_color, self.exit_button)
+        border_width = 3 if self.selected_button_index == 1 else 2
+        pygame.draw.rect(screen, (255, 255, 255), self.exit_button, border_width)
         exit_text = self.font.render("Back to Town", True, (255, 255, 255))
         exit_rect = exit_text.get_rect(center=self.exit_button.center)
         screen.blit(exit_text, exit_rect)
@@ -178,12 +186,33 @@ class BurlesqueView(BaseView):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.selected_button_index = (self.selected_button_index - 1) % 2
+                elif event.key == pygame.K_DOWN:
+                    self.selected_button_index = (self.selected_button_index + 1) % 2
+                elif event.key == pygame.K_RETURN:
+                    if self.selected_button_index == 0:
+                        if self.purchase_good_time(inventory):
+                            self.is_speaking = True
+                            self.speech_text = "Excellent choice, darling!\nYou're in for a treat."
+                        elif not self.can_afford_good_time(inventory):
+                            self.is_speaking = True
+                            self.speech_text = f"Sorry sugar, you need\n300$ for our special\nentertainment. Come back\nwhen you're ready!"
+                        elif self.good_time_active:
+                            self.is_speaking = True
+                            self.speech_text = "You're already having\nthe time of your life!"
+                    elif self.selected_button_index == 1:
+                        self.should_greet = True
+                        return "town"
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click
                     if self.exit_button.collidepoint(event.pos):
+                        self.selected_button_index = 1
                         self.should_greet = True  # Reset for next entry
                         return "town"
                     elif self.good_time_button.collidepoint(event.pos):
+                        self.selected_button_index = 0
                         if self.purchase_good_time(inventory):
                             # Show success dialog
                             self.is_speaking = True

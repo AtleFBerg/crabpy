@@ -17,6 +17,7 @@ class HighscoresView(BaseView):
         self.load_task = None  # Track the async task
         
         self.new_game_button = pygame.Rect(50, config.SCREEN_HEIGHT - 80, 150, 50)
+        self.selected_button_index = 0  # 0 = New Game, 1 = Refresh
     
     async def load_scores_async(self):
         try:
@@ -109,19 +110,25 @@ class HighscoresView(BaseView):
         
         # Refresh button
         refresh_button = pygame.Rect(config.SCREEN_WIDTH - 200, config.SCREEN_HEIGHT - 80, 150, 50)
-        refresh_color = (0, 100, 0) if not self.loading else (100, 100, 100)
+        refresh_color = (255, 165, 0) if self.selected_button_index == 1 and not self.loading else ((0, 100, 0) if not self.loading else (100, 100, 100))
         pygame.draw.rect(screen, refresh_color, refresh_button)
+        if self.selected_button_index == 1 and not self.loading:
+            pygame.draw.rect(screen, (255, 255, 255), refresh_button, 3)
         refresh_text = self.font_small.render("REFRESH", True, (255, 255, 255))
         refresh_rect = refresh_text.get_rect(center=refresh_button.center)
         screen.blit(refresh_text, refresh_rect)
         
         # New Game button
-        pygame.draw.rect(screen, (100, 0, 0), self.new_game_button)
+        new_game_color = (255, 165, 0) if self.selected_button_index == 0 else (100, 0, 0)
+        pygame.draw.rect(screen, new_game_color, self.new_game_button)
+        if self.selected_button_index == 0:
+            pygame.draw.rect(screen, (255, 255, 255), self.new_game_button, 3)
         new_game_text = self.font_small.render("NEW GAME", True, (255, 255, 255))
         new_game_rect = new_game_text.get_rect(center=self.new_game_button.center)
         screen.blit(new_game_text, new_game_rect)
 
     def handle_events(self, events, inventory):
+        refresh_button = pygame.Rect(config.SCREEN_WIDTH - 200, config.SCREEN_HEIGHT - 80, 150, 50)
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -129,17 +136,29 @@ class HighscoresView(BaseView):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return "game_over"
-                elif event.key == pygame.K_r and not self.loading:  # Only refresh if not already loading
+                elif event.key == pygame.K_LEFT:
+                    self.selected_button_index = (self.selected_button_index - 1) % 2
+                elif event.key == pygame.K_RIGHT:
+                    self.selected_button_index = (self.selected_button_index + 1) % 2
+                elif event.key == pygame.K_RETURN:
+                    if self.selected_button_index == 0:
+                        score_service.start_new_game()
+                        return "sea"
+                    elif self.selected_button_index == 1 and not self.loading:
+                        self.loading_started = False
+                        self.refresh_scores()
+                elif event.key == pygame.K_r and not self.loading:
                     self.refresh_scores()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # New Game button
                 if self.new_game_button.collidepoint(event.pos):
+                    self.selected_button_index = 0
                     score_service.start_new_game()
                     return "sea"
                 
-                refresh_button = pygame.Rect(config.SCREEN_WIDTH - 200, config.SCREEN_HEIGHT - 80, 150, 50)
                 if refresh_button.collidepoint(event.pos) and not self.loading:
-                    self.loading_started = False  # Reset so it can start fresh
+                    self.selected_button_index = 1
+                    self.loading_started = False
                     self.refresh_scores()
 
         return None
