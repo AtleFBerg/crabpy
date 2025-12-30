@@ -60,3 +60,46 @@ def draw_to_town_arrow(screen, camera_x, camera_y):
     text_surface = font.render('Town', True, (0, 0, 0))
     text_rect = text_surface.get_rect(center=(x + 25, y - 20))
     screen.blit(text_surface, text_rect)
+
+def draw_status_effects(screen, is_drunk, drunk_remaining, good_time_active, good_time_remaining):
+    """Draw status effects box in bottom left corner."""
+    import simulation
+    
+    box_width = 300
+    box_height = 100
+    box_x = 10
+    box_y = config.SCREEN_HEIGHT - box_height - 10
+    
+    # Draw semi-transparent background box
+    box_surface = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+    pygame.draw.rect(box_surface, (0, 0, 0, 150), (0, 0, box_width, box_height))
+    pygame.draw.rect(box_surface, (200, 200, 200), (0, 0, box_width, box_height), 2)
+    screen.blit(box_surface, (box_x, box_y))
+    
+    # Draw status text
+    font_small = pygame.font.SysFont(None, 24)
+    font_label = pygame.font.SysFont(None, 20)
+    
+    y_offset = box_y + 10
+    
+    # Drunk status
+    if is_drunk:
+        drunk_text = font_small.render("3X DRUNKBONUS!", True, (255, 100, 100))
+        drunk_time = font_label.render(f"{drunk_remaining}s", True, (255, 150, 150))
+        screen.blit(drunk_text, (box_x + 10, y_offset))
+        screen.blit(drunk_time, (box_x + 250, y_offset))
+        y_offset += 35
+    
+    # Good time status
+    if good_time_active:
+        good_time_text = font_small.render("2X GOOD TIME BONUS!", True, (100, 255, 100))
+        time_remaining = format_time(good_time_remaining)
+        good_time_clock = font_label.render(time_remaining, True, (150, 255, 150))
+        screen.blit(good_time_text, (box_x + 10, y_offset))
+        screen.blit(good_time_clock, (box_x + 250, y_offset))
+
+def format_time(seconds):
+    """Format time as MM:SS."""
+    minutes = seconds // 60
+    secs = seconds % 60
+    return f"{minutes:02d}:{secs:02d}"

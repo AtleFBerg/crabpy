@@ -8,7 +8,7 @@ class Crab:
    
     def __init__(self):
         self.x = random.randint(0, config.WORLD_WIDTH - 50)
-        self.y = random.randint(0, config.SCREEN_HEIGHT - 50)
+        self.y = random.randint(0, config.WORLD_HEIGHT - 50)
         self.speed = 1
         self.width = 50
         self.height = 50

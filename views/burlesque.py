@@ -1,6 +1,7 @@
 import pygame
 import time
 import random
+import simulation
 from .base_view import BaseView
 from services.score_service import score_service
 import config
@@ -82,46 +83,12 @@ class BurlesqueView(BaseView):
         
     def purchase_good_time(self, inventory):
         """Purchase good time if affordable"""
-        if self.can_afford_good_time(inventory) and not self.good_time_active:
+        if self.can_afford_good_time(inventory) and not simulation.good_time_active:
             inventory["money"] -= self.good_time_cost
-            self.good_time_active = True
-            self.good_time_start_time = time.time()
-            self.good_time_end_time = self.good_time_start_time + self.good_time_duration
-            
-            # Activate the scoring bonus
-            score_service.set_burlesque_bonus(True)
+            simulation.activate_good_time()
             return True
         return False
         
-    def is_good_time_active(self):
-        """Check if good time bonus is currently active"""
-        if not self.good_time_active:
-            return False
-            
-        current_time = time.time()
-        if current_time >= self.good_time_end_time:
-            self.good_time_active = False
-            # Deactivate the scoring bonus
-            score_service.set_burlesque_bonus(False)
-            return False
-            
-        return True
-        
-    def get_good_time_remaining(self):
-        """Get remaining good time in seconds"""
-        if not self.is_good_time_active():
-            return 0
-            
-        current_time = time.time()
-        remaining = max(0, self.good_time_end_time - current_time)
-        return int(remaining)
-        
-    def format_time(self, seconds):
-        """Format time as MM:SS"""
-        minutes = seconds // 60
-        seconds = seconds % 60
-        return f"{minutes:02d}:{seconds:02d}"
-
     def update(self, screen, camera_x, camera_y, inventory, font, *args, **kwargs):
         # Draw background image
         screen.blit(self.background_img, (0, 0))
@@ -130,9 +97,6 @@ class BurlesqueView(BaseView):
         if self.should_greet:
             self.show_greeting()
             self.should_greet = False
-        
-        # Update good time status (this will deactivate bonus if expired)
-        self.is_good_time_active()
         
         if self.is_speaking:
             screen.blit(self.speech_bubble, (-50, 100))
@@ -146,7 +110,7 @@ class BurlesqueView(BaseView):
         
         # Draw buttons
         # Good time button - always shows the same text
-        button_color = (100, 50, 75) if not self.good_time_active else (50, 25, 40)
+        button_color = (100, 50, 75) if not simulation.good_time_active else (50, 25, 40)
         if self.selected_button_index == 0:
             button_color = (255, 165, 0)  # Orange when selected
         pygame.draw.rect(screen, button_color, self.good_time_button)
@@ -155,7 +119,7 @@ class BurlesqueView(BaseView):
         
         # Static button text
         button_text = "Good time 300$"
-        text_color = (255, 255, 255) if not self.good_time_active else (150, 150, 150)
+        text_color = (255, 255, 255) if not simulation.good_time_active else (150, 150, 150)
             
         button_surface = self.font.render(button_text, True, text_color)
         button_rect = button_surface.get_rect(center=self.good_time_button.center)
@@ -171,15 +135,6 @@ class BurlesqueView(BaseView):
         exit_text = self.font.render("Back to Town", True, (255, 255, 255))
         exit_rect = exit_text.get_rect(center=self.exit_button.center)
         screen.blit(exit_text, exit_rect)
-        
-        # Good time status overlay
-        if self.is_good_time_active():
-            remaining = self.get_good_time_remaining()
-            status_text = self.font.render(f"Good Time: {self.format_time(remaining)}", True, (0, 255, 0))
-            screen.blit(status_text, (10, 10))
-            
-            bonus_text = self.small_font.render("Double points for caught crabs!", True, (255, 255, 0))
-            screen.blit(bonus_text, (10, 40))
 
     def handle_events(self, events, inventory, *args, **kwargs):
         for event in events:
@@ -199,7 +154,7 @@ class BurlesqueView(BaseView):
                         elif not self.can_afford_good_time(inventory):
                             self.is_speaking = True
                             self.speech_text = f"Sorry sugar, you need\n300$ for our special\nentertainment. Come back\nwhen you're ready!"
-                        elif self.good_time_active:
+                        elif simulation.good_time_active:
                             self.is_speaking = True
                             self.speech_text = "You're already having\nthe time of your life!"
                     elif self.selected_button_index == 1:
@@ -221,7 +176,7 @@ class BurlesqueView(BaseView):
                             # Show not enough money dialog
                             self.is_speaking = True
                             self.speech_text = f"Sorry sugar, you need\n300$ for our special\nentertainment. Come back\nwhen you're ready!"
-                        elif self.good_time_active:
+                        elif simulation.good_time_active:
                             # Already active dialog
                             self.is_speaking = True
                             self.speech_text = "You're already having\nthe time of your life!"

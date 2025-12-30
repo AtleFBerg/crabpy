@@ -1,5 +1,6 @@
 import pygame
 import random
+import simulation
 
 from animations import gui_elements
 from .base_view import BaseView
@@ -99,9 +100,8 @@ class PubView(BaseView):
         if inventory.get("money", 0) >= beer_price:
             inventory["money"] -= beer_price
             inventory["beer_count"] = inventory.get("beer_count", 0) + 1
-            # Make the boat drunk if boat reference exists
-            if self.boat:
-                self.boat.drink_beer()
+            # Activate global drunk effect (30 seconds)
+            simulation.activate_drunk(duration=30)
             self.speech_text = "Here's your beer!\nDrink responsibly...\nJust kidding, I don't care."
         else:
             self.speech_text = "Sorry, friend.\nYou don't have enough schmeckles.\nProbably for the best, honestly."

@@ -57,13 +57,6 @@ class Boat:
         self.wobble_timer += 0.05
         self.wobble_offset = math.sin(pygame.time.get_ticks() * 0.005) * 2
         
-        # Update drunk timer
-        if self.drunk_timer > 0:
-            self.drunk_timer -= 1
-            self.is_drunk = True
-        else:
-            self.is_drunk = False
-    
     def drink_beer(self):
         self.drunk_timer += 900
         self.is_drunk = True

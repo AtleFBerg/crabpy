@@ -67,9 +67,6 @@ class SeaView(BaseView):
         gui_elements.draw_crab_count(simulation.all_crabs, screen)
         gui_elements.draw_to_town_arrow(screen, camera_x, camera_y)
         
-        if self.boat.is_drunk:
-            drunk_text = font.render(f"Drunk! {self.boat.drunk_timer // 30}s", True, (255, 100, 100))
-            screen.blit(drunk_text, (config.SCREEN_WIDTH // 2 - 100, 10))
         # Draw the timer on screen
         from services.game_timer_service import game_timer
         game_timer.draw_timer(screen, config.SCREEN_WIDTH/ 2 - 100, 10)  # Position below other UI elements

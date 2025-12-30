@@ -38,12 +38,13 @@ views = {
     "highscores": HighscoresView(),
 }
 current_view = views["start_menu"]
+current_view_key = "start_menu"
 
 score_service.register_reset_callback(simulation.reset_global_game_state)
 score_service.register_reset_callback(simulation.boat.reset_for_new_game)
 
 async def main():
-    global current_view, running
+    global current_view, current_view_key, running
 
     while simulation.running:
         clock.tick(30)
@@ -55,10 +56,13 @@ async def main():
         if new_view_key:
             if new_view_key == "highscore_entry":
                 current_view = HighscoreEntryView(score_service.get_final_score())
+                current_view_key = "highscore_entry"
             elif new_view_key == "game_over":
                 current_view = GameOverView()
+                current_view_key = "game_over"
             elif new_view_key in views:
                 current_view = views[new_view_key]
+                current_view_key = new_view_key
             else:
                 print(f"Warning: Unknown view key '{new_view_key}'")
                 continue  
@@ -79,6 +83,8 @@ async def main():
             current_view.handle_keys(keys)
         
         simulation.camera_x, simulation.camera_y = current_view.update_camera()
+        
+        simulation.draw_status_effects(screen, current_view_key)
         
         pygame.display.flip()
         await asyncio.sleep(0)
