@@ -26,10 +26,12 @@ class SeaView(BaseView):
         self.cheat_code = ""
         self.cheat_active = False
         self.toggle_button_rect = pygame.Rect(config.SCREEN_WIDTH / 2, 20, 150, 40)
-        self.pip_width, self.pip_height = 125, 75
+        self.periscope_level = 0
+        self.pip_base_width, self.pip_base_height = 125, 75
+        self.pip_width, self.pip_height = self.pip_base_width, self.pip_base_height
         self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
-        self.periscope_img = pygame.image.load("assets/sprites/periscope.png").convert_alpha()
-        self.periscope_img = pygame.transform.scale(self.periscope_img, (self.pip_width + 40, self.pip_height + 40))
+        self.periscope_img_orig = pygame.image.load("assets/sprites/periscope.png").convert_alpha()
+        self.periscope_img = pygame.transform.scale(self.periscope_img_orig, (self.pip_width + 40, self.pip_height + 40))
         self.drunk_remap_timer = 0
         self.drunk_remap_duration = 90  
         self.current_control_map = {'left': 'left', 'right': 'right', 'up': 'up', 'down': 'down'}
@@ -53,6 +55,7 @@ class SeaView(BaseView):
             self.water_animation.update()
             self.water_animation.draw_ocean(screen, camera_x, camera_y)
         if inventory["reverse_periscope"]:
+            self._update_periscope_size(inventory["reverse_periscope"])
             self.draw_pip(screen)
         self.render_crabs(screen, camera_x, camera_y, simulation.all_crabs)
         self.draw_boat(screen, camera_x, camera_y)
@@ -240,6 +243,20 @@ class SeaView(BaseView):
         if keys[pygame.K_5]: self.selected_bait = Plankton(is_bait=True)
         if keys[pygame.K_6]: self.selected_bait = Starfish(is_bait=True)
 
+    def _update_periscope_size(self, level):
+        """Resize PIP and frame based on periscope upgrade level (1-3)."""
+        if level == self.periscope_level:
+            return
+        self.periscope_level = level
+        scale = 1.0 + (level - 1) * 0.5  # level 1: 1.0x, level 2: 1.5x, level 3: 2.0x
+        self.pip_width = int(self.pip_base_width * scale)
+        self.pip_height = int(self.pip_base_height * scale)
+        self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
+        v_padding = 40 + (level - 1) * 15  # extra vertical stretch per upgrade
+        self.frame_top_extra = (level - 1) * 10  # extra top extension per upgrade
+        frame_h = self.pip_height + v_padding + self.frame_top_extra
+        self.periscope_img = pygame.transform.scale(self.periscope_img_orig, (self.pip_width + 40, frame_h))
+
     def draw_pip(self, screen):
         self.pip_surface.fill((0, 0, 0, 0))
         boat_center_x = self.boat.x + self.boat.sprite.get_width() // 2
@@ -267,7 +284,8 @@ class SeaView(BaseView):
         pip_x = screen.get_width() - self.pip_width - 20
         pip_y = screen.get_height() - self.pip_height - 20
         screen.blit(round_pip, (screen.get_width() - self.pip_width - 20, screen.get_height() - self.pip_height - 20))
-        screen.blit(self.periscope_img, (pip_x - 20 , pip_y - 20))
+        top_extra = getattr(self, 'frame_top_extra', 0)
+        screen.blit(self.periscope_img, (pip_x - 20 , pip_y - 20 - top_extra))
 
     def reset_game_world(self):
         print("🌊 Resetting sea world...")
@@ -293,6 +311,10 @@ class SeaView(BaseView):
         self.selected_bait = None
         self.cheat_active = False
         self.underwater = False
+        self.periscope_level = 0
+        self.pip_width, self.pip_height = self.pip_base_width, self.pip_base_height
+        self.pip_surface = pygame.Surface((self.pip_width, self.pip_height), pygame.SRCALPHA).convert_alpha()
+        self.periscope_img = pygame.transform.scale(self.periscope_img_orig, (self.pip_width + 40, self.pip_height + 40))
         
         # Reset drunk controls
         self.current_control_map = {'left': 'left', 'right': 'right', 'up': 'up', 'down': 'down'}

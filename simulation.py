@@ -16,7 +16,7 @@ from services.game_timer_service import game_timer
 camera_x = 0
 camera_y = 0
 boat = None 
-inventory = {"crab_count": 0, "money": 0, "reverse_periscope": False}
+inventory = {"crab_count": 0, "money": 0, "reverse_periscope": 0}
 running = True
 
 # Global simulation state
@@ -64,7 +64,7 @@ def reset_global_game_state():
         "money": 0,
         "crab_count": 0,
         "beer_count": 0,
-        "reverse_periscope": False
+        "reverse_periscope": 0
     })
 
     # Reset global simulation

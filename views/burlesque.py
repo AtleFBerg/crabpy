@@ -39,8 +39,10 @@ class BurlesqueView(BaseView):
         
         # Buttons
         self.good_time_button = pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 350, 200, 50)
-        self.exit_button = pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 420, 200, 50)
+        self.more_time_button = pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 420, 200, 50)
+        self.exit_button = pygame.Rect(config.SCREEN_WIDTH // 2 - 100, 490, 200, 50)
         self.selected_button_index = 0  # Track which button is selected
+        self.num_buttons = 3
         
         # Dialog system
         self.is_speaking = False  # Start with no dialog showing
@@ -76,6 +78,26 @@ class BurlesqueView(BaseView):
         self.is_speaking = False
         self.should_greet = True  
         score_service.set_burlesque_bonus(False)
+
+    def get_more_time_cost(self):
+        """Get the cost for the next minute of time. Doubles each purchase: 100, 200, 400, 800..."""
+        from services.game_timer_service import game_timer
+        return 100 * (2 ** game_timer.times_bought)
+
+    def can_afford_more_time(self, inventory):
+        """Check if player can afford more time"""
+        return inventory.get("money", 0) >= self.get_more_time_cost()
+
+    def purchase_more_time(self, inventory):
+        """Purchase 1 extra minute of game time"""
+        from services.game_timer_service import game_timer
+        cost = self.get_more_time_cost()
+        if inventory.get("money", 0) >= cost:
+            inventory["money"] -= cost
+            game_timer.add_time(60)  # Add 1 minute
+            game_timer.times_bought += 1
+            return True
+        return False
         
     def can_afford_good_time(self, inventory):
         """Check if player can afford good time"""
@@ -125,12 +147,26 @@ class BurlesqueView(BaseView):
         button_rect = button_surface.get_rect(center=self.good_time_button.center)
         screen.blit(button_surface, button_rect)
         
+        # More time button
+        more_time_color = (50, 75, 100)
+        if self.selected_button_index == 1:
+            more_time_color = (255, 165, 0)  # Orange when selected
+        pygame.draw.rect(screen, more_time_color, self.more_time_button)
+        border_width = 3 if self.selected_button_index == 1 else 1
+        pygame.draw.rect(screen, (255, 255, 255), self.more_time_button, border_width)
+        
+        more_time_cost = self.get_more_time_cost()
+        more_time_text = f"More time {more_time_cost}$"
+        more_time_surface = self.font.render(more_time_text, True, (255, 255, 255))
+        more_time_rect = more_time_surface.get_rect(center=self.more_time_button.center)
+        screen.blit(more_time_surface, more_time_rect)
+        
         # Exit button
         exit_color = (100, 0, 0)
-        if self.selected_button_index == 1:
+        if self.selected_button_index == 2:
             exit_color = (255, 165, 0)  # Orange when selected
         pygame.draw.rect(screen, exit_color, self.exit_button)
-        border_width = 3 if self.selected_button_index == 1 else 2
+        border_width = 3 if self.selected_button_index == 2 else 2
         pygame.draw.rect(screen, (255, 255, 255), self.exit_button, border_width)
         exit_text = self.font.render("Back to Town", True, (255, 255, 255))
         exit_rect = exit_text.get_rect(center=self.exit_button.center)
@@ -143,9 +179,9 @@ class BurlesqueView(BaseView):
                 exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    self.selected_button_index = (self.selected_button_index - 1) % 2
+                    self.selected_button_index = (self.selected_button_index - 1) % self.num_buttons
                 elif event.key == pygame.K_DOWN:
-                    self.selected_button_index = (self.selected_button_index + 1) % 2
+                    self.selected_button_index = (self.selected_button_index + 1) % self.num_buttons
                 elif event.key == pygame.K_RETURN:
                     if self.selected_button_index == 0:
                         if self.purchase_good_time(inventory):
@@ -158,14 +194,31 @@ class BurlesqueView(BaseView):
                             self.is_speaking = True
                             self.speech_text = "You're already having\nthe time of your life!"
                     elif self.selected_button_index == 1:
+                        cost = self.get_more_time_cost()
+                        if self.purchase_more_time(inventory):
+                            self.is_speaking = True
+                            self.speech_text = f"One more minute, sugar!\nThat'll be {cost}$.\nNow get back out there!"
+                        else:
+                            self.is_speaking = True
+                            self.speech_text = f"You need {cost}$\nfor an extra minute,\ndarling. Go catch\nsome more crabs!"
+                    elif self.selected_button_index == 2:
                         self.should_greet = True
                         return "town"
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click
                     if self.exit_button.collidepoint(event.pos):
-                        self.selected_button_index = 1
+                        self.selected_button_index = 2
                         self.should_greet = True  # Reset for next entry
                         return "town"
+                    elif self.more_time_button.collidepoint(event.pos):
+                        self.selected_button_index = 1
+                        cost = self.get_more_time_cost()
+                        if self.purchase_more_time(inventory):
+                            self.is_speaking = True
+                            self.speech_text = f"One more minute, sugar!\nThat'll be {cost}$.\nNow get back out there!"
+                        else:
+                            self.is_speaking = True
+                            self.speech_text = f"You need {cost}$\nfor an extra minute,\ndarling. Go catch\nsome more crabs!"
                     elif self.good_time_button.collidepoint(event.pos):
                         self.selected_button_index = 0
                         if self.purchase_good_time(inventory):

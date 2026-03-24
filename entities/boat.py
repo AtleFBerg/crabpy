@@ -42,13 +42,18 @@ class Boat:
             all_food.append(new_bait)
 
     def raise_pot(self, pot: CrabPot, all_food, crab_inventory):
-        from services.score_service import score_service 
+        from services.score_service import score_service
+        from services.game_timer_service import game_timer
+        num_crabs = len(pot.caught_crabs)
         if pot.caught_crabs:
             for crab in pot.caught_crabs:
                 points = score_service.add_crab_catch(is_drunk=self.is_drunk)
                 print(f"Caught crab! +{points} points" + (" (DRUNK BONUS!)" if self.is_drunk else ""))
 
-        crab_inventory["crab_count"] += len(pot.caught_crabs)
+        crab_inventory["crab_count"] += num_crabs
+        if num_crabs > 0:
+            game_timer.add_time(num_crabs)
+            print(f"Time bonus: +{num_crabs} seconds!")
         pot.raise_pot(all_food)
         self.pots.remove(pot)
 

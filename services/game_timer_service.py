@@ -3,11 +3,13 @@ import time
 
 class GameTimerService:
     def __init__(self, duration_minutes: int = 5):
-        self.duration_seconds = duration_minutes * 60  
+        self._initial_duration = duration_minutes * 60
+        self.duration_seconds = self._initial_duration
         self.start_time = None
         self.end_time = None
         self.is_running = False
         self.is_finished = False
+        self.times_bought = 0
         self._font = None 
         
     @property
@@ -30,11 +32,19 @@ class GameTimerService:
             self.end_time = time.time()
             self.is_running = False
             
+    def add_time(self, seconds: int):
+        """Add extra seconds to the timer."""
+        if self.is_running and not self.is_finished:
+            self.duration_seconds += seconds
+            print(f"Added {seconds} seconds! Total duration now: {self.duration_seconds}s")
+
     def reset(self):
+        self.duration_seconds = self._initial_duration
         self.start_time = None
         self.end_time = None
         self.is_running = False
         self.is_finished = False
+        self.times_bought = 0
         
     def update(self):
         if not self.is_running or self.is_finished:

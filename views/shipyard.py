@@ -5,6 +5,13 @@ import config
 from entities.boat import Boat
 
 class ShipyardView(BaseView):
+    # Purchase limits: None means unlimited
+    PURCHASE_LIMITS = {
+        "Upgrade Engine": None,
+        "Buy Crab Pot": None,
+        "Reverse Periscope": 3,
+    }
+
     def __init__(self, boat: Boat):
         self.boat = boat
         self.background_img = pygame.image.load('assets/shipyard.png').convert_alpha()
@@ -26,8 +33,20 @@ class ShipyardView(BaseView):
             {"label": "Reverse Periscope", "price": 15, "rect": pygame.Rect(grid_center - 90, grid_y + grid_spacing_y, 180, 80)},
             {"label": "Back", "price": None, "rect": pygame.Rect(grid_center - 90, grid_y + 2 * grid_spacing_y, 180, 80)}
         ]
+        self.purchase_counts = {"Upgrade Engine": 0, "Buy Crab Pot": 0, "Reverse Periscope": 0}
         self.selected_grid_index = 0
         self.info_text = "Shipyard"
+        self.speech_text = None
+
+        # Register reset callback
+        from services.score_service import score_service
+        score_service.register_reset_callback(self.reset_shipyard_state)
+
+    def reset_shipyard_state(self):
+        """Reset shipyard state when game resets"""
+        self.purchase_counts = {"Upgrade Engine": 0, "Buy Crab Pot": 0, "Reverse Periscope": 0}
+        self.show_grid = False
+        self.selected_grid_index = 0
         self.speech_text = None
 
     def update(self, screen, camera_x, camera_y, inventory, font, *args, **kwargs):
@@ -44,16 +63,29 @@ class ShipyardView(BaseView):
                 screen.blit(text_surface, text_rect)
         if self.show_grid:
             for i, item in enumerate(self.grid_items):
-                color = (255, 165, 0) if i == self.selected_grid_index else (60, 180, 60)
+                label = item["label"]
+                limit = self.PURCHASE_LIMITS.get(label)
+                is_maxed = limit is not None and self.purchase_counts.get(label, 0) >= limit
+
+                if is_maxed:
+                    color = (80, 80, 80)  # Grey when maxed out
+                elif i == self.selected_grid_index:
+                    color = (255, 165, 0)
+                else:
+                    color = (60, 180, 60)
                 pygame.draw.rect(screen, color, item["rect"])
                 border_width = 3 if i == self.selected_grid_index else 0
                 if border_width:
                     pygame.draw.rect(screen, (255, 255, 255), item["rect"], border_width)
-                label_surface = self.font.render(item["label"], True, (255, 255, 255))
+                text_color = (150, 150, 150) if is_maxed else (255, 255, 255)
+                label_surface = self.font.render(item["label"], True, text_color)
                 label_rect = label_surface.get_rect(center=(item["rect"].centerx, item["rect"].centery - 15))
                 screen.blit(label_surface, label_rect)
                 if item["price"] is not None:
-                    price_surface = self.font.render(f"${item['price']}", True, (255, 255, 0))
+                    if is_maxed:
+                        price_surface = self.font.render("MAXED", True, (255, 100, 100))
+                    else:
+                        price_surface = self.font.render(f"${item['price']}", True, (255, 255, 0))
                     price_rect = price_surface.get_rect(center=(item["rect"].centerx, item["rect"].centery + 20))
                     screen.blit(price_surface, price_rect)
         else:
@@ -150,11 +182,24 @@ class ShipyardView(BaseView):
                 return "town_view"
         return None
     
+    def is_maxed(self, item_name):
+        """Check if an item has reached its purchase limit."""
+        limit = self.PURCHASE_LIMITS.get(item_name)
+        if limit is None:
+            return False
+        return self.purchase_counts.get(item_name, 0) >= limit
+
     def buy_item(self, item_name, inventory):
+        # Check purchase limit first
+        if self.is_maxed(item_name):
+            self.speech_text = f"{item_name} is already maxed out!"
+            return
+
         if item_name == "Upgrade Engine":
             if inventory["money"] >= 10:
                 inventory["money"] -= 10
                 self.boat.speed += 0.5 
+                self.purchase_counts[item_name] += 1
                 self.speech_text = "Engine upgraded!"
             else:
                 self.speech_text = "Not enough money for engine upgrade."
@@ -162,13 +207,17 @@ class ShipyardView(BaseView):
             if inventory["money"] >= 10:
                 inventory["money"] -= 10
                 self.boat.max_pots += 1
+                self.purchase_counts[item_name] += 1
                 self.speech_text = "Crab pot purchased!"
             else:
                 self.speech_text = "Not enough money for crab pot."
         elif item_name == "Reverse Periscope":
             if inventory["money"] >= 15:
                 inventory["money"] -= 15
-                inventory["reverse_periscope"] = True
-                self.speech_text = "Periscope installed!"
+                self.purchase_counts[item_name] += 1
+                level = self.purchase_counts[item_name]
+                inventory["reverse_periscope"] = level
+                level_names = {1: "installed", 2: "upgraded", 3: "fully upgraded"}
+                self.speech_text = f"Periscope {level_names.get(level, 'upgraded')}!"
             else:
                 self.speech_text = "Not enough money for periscope."
